@@ -1,0 +1,264 @@
+[versions]
+
+#/**
+#* Compile sdk version
+#* 按照指定sdk版本进行编译  不影响实际运行  尽量写最新的，最好跟targetsdkversion版本保持一致
+#*/
+
+compileSdk = "34"
+
+#/**
+#* Min sdk version
+#* App支持的最低版本 Android 6.0
+#*/
+minSdk = "23"
+
+#/**
+#* Target sdk version
+#* 目标版本 启用该版本特性 主要做兼容处理 低于该版本的设备按照实际版本运行  高于该版本的设备按照该版本特性运行
+#* 可以参考市场占有份额来定 https://www.appbrain.com/stats/top-android-sdk-versions
+# Android 13
+#*/
+#AGP的版本
+agp = "8.13.1"
+
+# AndroidX相关的稳定版本，组件依赖时使用
+androidxAppcompatStable = "1.6.1"
+activityStable = "1.7.2"
+androidxActivityKtxStable = "1.7.2"
+androidxFragmentKtxStable = "1.6.2"
+androidxLifecycleStable = "2.7.0"
+androidxVectordrawableStable = "1.1.0"
+androidxConstraintlayoutStable = "2.1.4"
+androidxAnnotationStable = "1.7.1"
+androidxCoreStable = "1.7.0"
+kotlinStable = "1.7.21"
+materialStable = "1.4.0"
+kotlinxCoroutinesStable = "1.6.4"
+kotlinxSerializationJsonStable = "1.5.0"
+
+
+#较新版本，App依赖时使用
+androidxAppcompat = "1.7.1"
+activity = "1.11.0"
+androidxActivityKtx = "1.11.0"
+androidxFragmentKtx = "1.8.9"
+androidxCollectionKtx = "1.5.0"
+androidxLifecycle = "2.9.4"
+androidxVectordrawable = "1.2.0"
+androidxConstraintlayout = "2.2.1"
+androidxAnnotation = "1.9.1"
+androidxMultidex = "2.0.1"
+androidxCore = "1.17.0"
+androidxCoreSplashscreen = "1.2.0"
+androidxCoordinatorlayout = "1.3.0"
+androidxSwiperefreshlayout = "1.1.0"
+androidxRecyclerview = "1.4.0"
+androidxViewpager2 = "1.1.0"
+androidxExifinterface = "1.4.1"
+androidxRoom = "2.8.3"
+androidxWebkit = "1.14.0"
+material = "1.13.0"
+cardview = "1.0.0"
+
+#kotlin
+kotlin = "2.2.21"
+ksp = "2.2.20-2.0.4"
+kotlinxCoroutines = "1.10.2"
+kotlinxSerializationJson = "1.9.0"
+
+#三方库
+theRouter = "1.3.0"
+benManesVersion = "0.53.0"
+vanniktechPublish = "0.35.0"
+okhttp = "5.3.0"
+retrofit = "3.0.0"
+retrofitKotlinxSerializationJson = "1.0.0"
+lottie = "6.7.1"
+moshiKotlin = "1.15.2"
+utilcodex = "1.31.1"
+xxPermissions = "18.65"
+mmkv = "2.2.4"
+progressManager = "1.5.0"
+appStartFaster = "2.3.0"
+bannerViewPager = "3.5.17"
+jsoup = "1.21.2"
+brv = "1.6.1"
+flexboxLayout = "3.0.0"
+leakcanaryAndroid = "2.14"
+coil = "2.7.0"
+photoView = "2.3.0"
+materialDialog = "3.3.0"
+dateTimePicker = "0.6.3"
+threetenabp = "1.4.9"
+
+junit = "4.13.2"
+androidx-test-ext-junit = "1.1.5"
+espresso-core = "3.5.1"
+
+#高德map
+gaodeLocation = "6.5.1"
+
+#我的开源库
+xeonBuildManager = "0.0.7"
+xeonDependencyManager = "1.0.2"
+xeonZxing = "2.2.9"
+xeonCordovaWebContainer = "1.0.7"
+xeonCordovaLib = "12.0.2"
+xeonBsDiff = "1.0.4"
+xeonLogger = "1.2.1"
+xeonApplication = "1.0.9"
+xeonCoroutine = "1.0.5"
+xeonMMKV = "1.0.1"
+xeonBinding = "1.0.2"
+xeonLocationManager = "1.0.2"
+xeonLocationGaode = "1.0.2"
+xeonLocationTencent = "1.0.2"
+xeonLocationBaidu = "1.0.2"
+xeonNetworkStatus = "1.0.1"
+xeonFloatView = "1.0.3"
+
+
+[libraries]
+
+# 稳定版本
+androidx-appcompat-stable = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppcompatStable" }
+androidx-activity-stable = { group = "androidx.activity", name = "activity", version.ref = "activityStable" }
+androidx-activity-ktx-stable = { group = "androidx.activity", name = "activity-ktx", version.ref = "androidxActivityKtxStable" }
+androidx-fragment-ktx-stable = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidxFragmentKtxStable" }
+androidx-lifecycle-viewmodel-ktx-stable = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidxLifecycleStable" }
+androidx-lifecycle-livedata-ktx-stable = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidxLifecycleStable" }
+androidx-lifecycle-runtime-ktx-stable = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidxLifecycleStable" }
+androidx-vectordrawable-stable = { group = "androidx.vectordrawable", name = "vectordrawable", version.ref = "androidxVectordrawableStable" }
+androidx-constraintlayout-stable = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidxConstraintlayoutStable" }
+androidx-annotation-stable = { group = "androidx.annotation", name = "annotation", version.ref = "androidxAnnotationStable" }
+androidx-core-ktx-stable = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCoreStable" }
+kotlin-bom-stable = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlinStable" }
+kotlinx-coroutines-android-stable = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesStable" }
+kotlinx-serialization-json-stable = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJsonStable" }
+
+
+
+
+#androidX
+google-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppcompat" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "androidxActivityKtx" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidxFragmentKtx" }
+androidx-collection-ktx = { group = "androidx.collection", name = "collection-ktx", version.ref = "androidxCollectionKtx" }
+androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidxLifecycle" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidxLifecycle" }
+#Lifecycles only (without ViewModel or LiveData)
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
+androidx-vectordrawable = { group = "androidx.vectordrawable", name = "vectordrawable", version.ref = "androidxVectordrawable" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidxConstraintlayout" }
+androidx-coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "androidxCoordinatorlayout" }
+androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidxAnnotation" }
+androidx-multidex = { group = "androidx.multidex", name = "multidex", version.ref = "androidxMultidex" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
+androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "androidxSwiperefreshlayout" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "androidxRecyclerview" }
+androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "androidxViewpager2" }
+androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "androidxExifinterface" }
+androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "androidxWebkit" }
+kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlin" }
+
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+
+
+#三方库
+okhttp-core = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofit" }
+retrofit-kotlin-serialization = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version.ref = "retrofitKotlinxSerializationJson" }
+lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie" }
+threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
+utilcodex = { group = "com.blankj", name = "utilcodex", version.ref = "utilcodex" }
+xxPermissions = { group = "com.github.getActivity", name = "XXPermissions", version.ref = "xxPermissions" }
+mmkv = { group = "com.tencent", name = "mmkv", version.ref = "mmkv" }
+moshiKotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshiKotlin" }
+progressManager = { group = "com.github.JessYanCoding", name = "ProgressManager", version.ref = "progressManager" }
+appStartFaster = { group = "com.github.aiceking", name = "AppStartFaster", version.ref = "appStartFaster" }
+bannerViewPager = { group = "com.github.zhpanvip", name = "BannerViewPager", version.ref = "bannerViewPager" }
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+brv = { group = "com.github.liangjingkanji", name = "BRV", version.ref = "brv" }
+flexbox-layout = { group = "com.github.google", name = "flexbox-layout", version.ref = "flexboxLayout" }
+leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanaryAndroid" }
+coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
+photoView = { group = "com.github.chrisbanes", name = "PhotoView", version.ref = "photoView" }
+materialDialog-core = { group = "com.afollestad.material-dialogs", name = "core", version.ref = "materialDialog" }
+materialDialog-input = { group = "com.afollestad.material-dialogs", name = "input", version.ref = "materialDialog" }
+materialDialog-bottomsheets = { group = "com.afollestad.material-dialogs", name = "bottomsheets", version.ref = "materialDialog" }
+materialDialog-lifecycle = { group = "com.afollestad.material-dialogs", name = "lifecycle", version.ref = "materialDialog" }
+dateTimePicker = { group = "com.github.loperSeven", name = "DateTimePicker", version.ref = "dateTimePicker" }
+
+#我自己的开源库
+xeonyu-bsdiff = { group = "com.xeonyu", name = "bsdiff", version.ref = "xeonBsDiff" }
+xeonyu-zxing = { group = "com.github.yuzhiqiang1993", name = "zxing", version.ref = "xeonZxing" }
+xeonyu-cordova-webcontainer = { group = "com.xeonyu", name = "cordova-webcontainer", version.ref = "xeonCordovaWebContainer" }
+xeonyu-cordova-lib = { group = "com.xeonyu", name = "cordova-lib", version.ref = "xeonCordovaLib" }
+xeonyu-logger = { group = "com.xeonyu", name = "logger", version.ref = "xeonLogger" }
+xeonyu-application = { group = "com.xeonyu", name = "application", version.ref = "xeonApplication" }
+xeonyu-coroutine = { group = "com.xeonyu", name = "coroutine", version.ref = "xeonCoroutine" }
+xeonyu-mmkv = { group = "com.xeonyu", name = "mmkv", version.ref = "xeonMMKV" }
+xeonyu-binding = { group = "com.xeonyu", name = "binding", version.ref = "xeonBinding" }
+xeonyu-location-manager = { group = "com.xeonyu", name = "location-manager", version.ref = "xeonLocationManager" }
+xeonyu-location-gaode = { group = "com.xeonyu", name = "location-gaode", version.ref = "xeonLocationGaode" }
+xeonyu-location-tencent = { group = "com.xeonyu", name = "location-tencent", version.ref = "xeonLocationTencent" }
+xeonyu-location-baidu = { group = "com.xeonyu", name = "location-baidu", version.ref = "xeonLocationBaidu" }
+xeonyu-network-status = { group = "com.xeonyu", name = "network-status", version.ref = "xeonNetworkStatus" }
+xeonyu-floatview = { group = "com.xeonyu", name = "float-view", version.ref = "xeonFloatView" }
+
+
+
+#高德
+gaode-location = { group = "com.amap.api", name = "location", version.ref = "gaodeLocation" }
+
+
+#build-manager 依赖管理插件的依赖
+
+#android Gradle插件
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+#kotlin Gradle插件
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlinStable" }
+#KSP
+ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+#therouter
+therouter = { group = "cn.therouter", name = "router", version.ref = "theRouter" }
+therouter-apt = { group = "cn.therouter", name = "apt", version.ref = "theRouter" }
+#room
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidxRoom" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidxRoom" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidxRoom" }
+
+
+
+#测试
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
+
+
+[bundles]
+room = ["androidx-room-ktx", "androidx-room-runtime"]
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+therouter = { id = "cn.therouter", version.ref = "theRouter" }
+#检查依赖库是否有新版本
+benManesVersion = { id = "com.github.ben-manes.versions", version.ref = "benManesVersion" }
+#版本发布三方插件
+vanniktechPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechPublish" }
+#自定义的插件
+xeonyu-application = { id = "com.xeonyu.plugin.application", version.ref = "xeonBuildManager" }
+xeonyu-library = { id = "com.xeonyu.plugin.library", version.ref = "xeonBuildManager" }
+xeonyu-dependencyManager = { id = "com.xeonyu.plugin.dependencyManager", version.ref = "xeonDependencyManager" }

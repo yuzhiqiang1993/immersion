@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.App">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".FragmentDemoActivity"
+            android:exported="false"
+            android:label="Fragment 演示" />
+
+        <activity
+            android:name=".ViewPagerDemoActivity"
+            android:exported="false"
+            android:label="ViewPager 演示" />
+
+        <activity
+            android:name=".DrawerDemoActivity"
+            android:exported="false"
+            android:label="DrawerLayout 演示" />
+
+        <activity
+            android:name=".CoordinatorDemoActivity"
+            android:exported="false"
+            android:label="CoordinatorLayout 演示" />
+    </application>
+
+</manifest>
