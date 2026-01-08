@@ -15,16 +15,21 @@ A modern Android immersion bar library based on the officially recommended Edge-
 - 🔧 **Flexible Configuration**: Independent control of status bar and navigation bar
 - 🌙 **Smart Adaptation**: Automatically handle dark/light status bar text
 - 📊 **Real-time Information**: Provide status bar/navigation bar height and other system information
+- 🔄 **Dynamic Toggle**: Support runtime enable/disable immersion mode
 
 ## 📦 Installation
 
 Add the dependency to your module's `build.gradle.kts` file:
 
+> Check for the latest version: [Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar)
+
 ```kotlin
 dependencies {
-    implementation("com.xeonyu:immersionbar:1.0.0")
+    implementation("com.xeonyu:immersionbar:latest_version")
 }
 ```
+
+Replace `latest_version` with the latest version number from the link above (e.g., `1.0.0`)
 
 ## 🚀 Quick Start
 
@@ -39,10 +44,10 @@ class MainActivity : AppCompatActivity() {
         // Enable immersion mode
         ImmersionBar.enable(
             activity = this,
-            rootView = findViewById(R.id.content_container), // Root view that needs status bar padding to avoid coverage
-            darkStatusBarText = true,  // Dark text, suitable for light background
-            showStatusBar = true,      // Show status bar
-            showNavigationBar = true   // Show navigation bar
+            darkStatusBarText = true,    // Dark text, suitable for light background
+            showStatusBar = true,        // Show status bar
+            showNavigationBar = true,    // Show navigation bar
+            fitNavigationBar = false     // Not extend to navigation bar
         )
     }
 }
@@ -57,10 +62,10 @@ The main method to enable immersion mode, complete all immersion settings with o
 ```kotlin
 ImmersionBar.enable(
     activity: Activity,                    // Required - Target Activity instance
-    rootView: View? = null,                // Optional - View that needs Insets applied
     darkStatusBarText: Boolean = true,     // Optional - Whether status bar text is dark
     showStatusBar: Boolean = true,         // Optional - Whether to show status bar
-    showNavigationBar: Boolean = true      // Optional - Whether to show navigation bar
+    showNavigationBar: Boolean = true,     // Optional - Whether to show navigation bar
+    fitNavigationBar: Boolean = false      // Optional - Whether content extends to navigation bar
 )
 ```
 
@@ -69,22 +74,33 @@ ImmersionBar.enable(
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | **activity** | `Activity` | Required | Activity instance to set immersion. Usually pass `this` |
-| **rootView** | `View?` | `null` | View that needs automatic system bar padding.<br>• **Pass value**: Automatically add padding of status bar and navigation bar height to this view<br>• **null**: No automatic padding handling, content extends under system bars<br>• **Common usage**: Pass root layout or content container to avoid content being covered by system bars |
 | **darkStatusBarText** | `Boolean` | `true` | Status bar text color mode.<br>• **true**: Dark text (suitable for white/light backgrounds)<br>• **false**: Light text (suitable for black/dark backgrounds)<br>• **Note**: Only effective on Android 6.0+ |
 | **showStatusBar** | `Boolean` | `true` | Whether to show status bar.<br>• **true**: Show status bar<br>• **false**: Hide status bar<br>• **When hidden**: Can be temporarily shown with swipe gesture |
 | **showNavigationBar** | `Boolean` | `true` | Whether to show navigation bar.<br>• **true**: Show navigation bar<br>• **false**: Hide navigation bar<br>• **When hidden**: Can be temporarily shown with swipe gesture |
+| **fitNavigationBar** | `Boolean` | `false` | Whether content extends to navigation bar area.<br>• **false (recommended)**: Does not extend, automatically adds navigation bar height padding to root layout to avoid content being covered by navigation bar<br>• **true**: Extends to bottom, navigation bar transparent, suitable for full-screen scenarios |
 
-### Auxiliary Methods
+### Disable Immersion - ImmersionBar.disable()
 
-#### WindowInsets Related Methods
+Disable immersion mode and restore to default state (system bars white, content not extended).
 
 ```kotlin
-// Manually apply WindowInsets to specified view (add system bar height padding)
-ImmersionBar.applyWindowInsets(view: View)
-
-// Remove WindowInsets listener from view
-ImmersionBar.removeWindowInsets(view: View)
+ImmersionBar.disable(activity: Activity)
 ```
+
+### Update System Bars - ImmersionBar.updateSystemBars()
+
+Dynamically update system bars visibility and text color, effective regardless of immersion mode state.
+
+```kotlin
+ImmersionBar.updateSystemBars(
+    activity: Activity,                    // Target Activity
+    showStatusBar: Boolean = true,         // Whether to show status bar
+    showNavigationBar: Boolean = true,     // Whether to show navigation bar
+    darkStatusBarText: Boolean = true      // Whether status bar text is dark
+)
+```
+
+### Auxiliary Methods
 
 #### Status Bar Text Control
 
@@ -114,7 +130,7 @@ val hasNotch = ImmersionBar.hasNotch()
 
 ## 🎨 Usage Scenarios
 
-### 1. Complete Immersion Layout
+### 1. Recommended Configuration for Most Apps
 
 ```kotlin
 class MainActivity : AppCompatActivity() {
@@ -122,73 +138,118 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Complete immersion: content extends under system bars, automatically handle padding
+        // Standard immersion: transparent status bar, navigation bar keeps default color
         ImmersionBar.enable(
             activity = this,
-            rootView = findViewById(R.id.content_container),
             darkStatusBarText = true,
             showStatusBar = true,
-            showNavigationBar = true
+            showNavigationBar = true,
+            fitNavigationBar = false  // Not extend to navigation bar
         )
     }
 }
 ```
 
-### 2. Hide Navigation Bar
+### 2. Complete Immersion Layout
+
+```kotlin
+// Content extends under all system bars (navigation bar transparent)
+ImmersionBar.enable(
+    activity = this,
+    darkStatusBarText = true,
+    showStatusBar = true,
+    showNavigationBar = true,
+    fitNavigationBar = true  // Extend to bottom
+)
+```
+
+### 3. Hide Navigation Bar
 
 ```kotlin
 // Hide navigation bar, keep status bar visible
 ImmersionBar.enable(
     activity = this,
-    rootView = binding.contentContainer,
     darkStatusBarText = true,
     showStatusBar = true,
     showNavigationBar = false  // Hide navigation bar
 )
 ```
 
-### 3. Dark Background with Light Text
+### 4. Dark Background with Light Text
 
 ```kotlin
 // Use light status bar text for dark background
 ImmersionBar.enable(
     activity = this,
-    rootView = binding.rootView,
     darkStatusBarText = false,  // Light text suitable for dark background
     showStatusBar = true,
-    showNavigationBar = true
+    showNavigationBar = true,
+    fitNavigationBar = false
 )
 ```
 
-### 4. Usage in Fragment
+### 5. Dynamic Toggle Immersion Mode
 
 ```kotlin
-class MyFragment : Fragment() {
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+class MainActivity : AppCompatActivity() {
 
-        // Apply WindowInsets to Fragment's root view
-        ImmersionBar.applyWindowInsets(view)
+    private var isImmersionEnabled = true
+
+    private fun toggleImmersion() {
+        if (isImmersionEnabled) {
+            // Disable immersion
+            ImmersionBar.disable(this)
+            // Still can control system bar visibility after disable
+            ImmersionBar.updateSystemBars(
+                activity = this,
+                darkStatusBarText = true,
+                showStatusBar = true,
+                showNavigationBar = true
+            )
+        } else {
+            // Enable immersion
+            ImmersionBar.enable(
+                activity = this,
+                darkStatusBarText = true,
+                showStatusBar = true,
+                showNavigationBar = true,
+                fitNavigationBar = false
+            )
+        }
+        isImmersionEnabled = !isImmersionEnabled
     }
 }
 ```
 
-### 5. Dynamic Theme Switching
+### 6. Dynamic Theme Switching
 
 ```kotlin
 class ThemedActivity : AppCompatActivity() {
     private fun toggleTheme() {
-        val isDarkBackground = currentTheme == Theme.DARK
+        val isLightTheme = currentTheme == Theme.LIGHT
 
         // Update background color
         binding.rootView.setBackgroundColor(
-            if (isDarkBackground) Color.BLACK else Color.WHITE
+            if (isLightTheme) Color.WHITE else Color.BLACK
         )
 
         // Sync update status bar text color
-        ImmersionBar.setStatusBarTextDark(this, !isDarkBackground)
+        ImmersionBar.setStatusBarTextDark(this, isLightTheme)
     }
 }
+```
+
+### 7. Full-screen Video/Image Viewer
+
+```kotlin
+// Complete immersion: hide all system bars
+ImmersionBar.enable(
+    activity = this,
+    darkStatusBarText = false,
+    showStatusBar = false,     // Hide status bar
+    showNavigationBar = false, // Hide navigation bar
+    fitNavigationBar = true    // Fully extend
+)
 ```
 
 ## 💡 Best Practices
@@ -196,40 +257,63 @@ class ThemedActivity : AppCompatActivity() {
 ### Recommended Configuration Combinations
 
 ```kotlin
-// 1. Recommended configuration for most apps
+// 1. Recommended configuration for most apps (transparent status bar, navigation bar keeps default)
 ImmersionBar.enable(
     activity = this,
-    rootView = binding.contentContainer,
     darkStatusBarText = true,
     showStatusBar = true,
-    showNavigationBar = true
+    showNavigationBar = true,
+    fitNavigationBar = false
 )
 
-// 2. Full-screen video/image viewer
+// 2. Full-screen reading/video apps
 ImmersionBar.enable(
     activity = this,
-    rootView = null,  // No padding needed, content fully extends
-    darkStatusBarText = false,
-    showStatusBar = false,    // Hide status bar
-    showNavigationBar = false // Hide navigation bar
-)
-
-// 3. Reading apps (can hide navigation bar)
-ImmersionBar.enable(
-    activity = this,
-    rootView = binding.contentContainer,
     darkStatusBarText = isLightTheme,
-    showStatusBar = true,
-    showNavigationBar = false  // Hide navigation bar for more reading space
+    showStatusBar = false,     // Hide status bar
+    showNavigationBar = false, // Hide navigation bar
+    fitNavigationBar = true
+)
+
+// 3. Game apps
+ImmersionBar.enable(
+    activity = this,
+    darkStatusBarText = false,
+    showStatusBar = false,
+    showNavigationBar = false,
+    fitNavigationBar = true
 )
 ```
 
 ### Notes
 
-1. **rootView parameter**: Should be passed in most cases to avoid content being covered by system bars
+1. **fitNavigationBar parameter**:
+   - Most apps use `false` (default), avoid content being covered by navigation bar
+   - Full-screen apps use `true`, content extends to bottom
+
 2. **Version compatibility**: `darkStatusBarText` only effective on Android 6.0+
+
 3. **Gesture navigation**: Hidden system bars can be temporarily shown with gestures
+
 4. **Performance optimization**: Avoid frequent calls to `enable()` method outside of `onCreate`
+
+5. **Disable immersion**: After `disable()`, system bars restore to white and content no longer extends under system bars
+
+6. **Padding parameter dependency**:
+   - `paddingStatusBar` and `paddingNavigationBar` parameters are only effective when immersion mode is enabled
+   - When immersion mode is disabled, padding settings automatically become ineffective
+   - When implementing UI switches, it's recommended to bind padding switch enabled state to immersion switch state
+   - Example code:
+     ```kotlin
+     // When immersion is disabled, disable and uncheck padding switches
+     if (!isChecked) {
+         binding.switchPaddingStatusBar.isChecked = false
+         binding.switchPaddingNavBar.isChecked = false
+     }
+     // Control padding switches availability based on immersive state
+     binding.switchPaddingStatusBar.isEnabled = isChecked
+     binding.switchPaddingNavBar.isEnabled = isChecked
+     ```
 
 ## 🏗️ Project Structure
 
@@ -258,6 +342,17 @@ Welcome to submit Issues and Pull Requests!
 4. Push to branch: `git push origin feature/AmazingFeature`
 5. Submit Pull Request
 
+## 🔄 Version History
+
+### v1.0.0 (2025-12-29)
+
+- ✨ First release
+- 🚀 Based on Android 15+ Edge-to-Edge mode
+- 📱 Supports API 21+ (Android 5.0+)
+- 🎨 Simple and easy-to-use API design
+- 🌙 Automatically handle dark/light status bar text
+- 🔄 Support runtime enable/disable immersion mode
+
 ## 📄 License
 
 This project is licensed under the Apache License 2.0. For details, please see the [LICENSE](LICENSE) file.
@@ -266,7 +361,7 @@ This project is licensed under the Apache License 2.0. For details, please see t
 
 **Author**: [yuzhiqiang](https://github.com/yuzhiqiang1993)
 **Version**: 1.0.0
-**Update Time**: 2025-11-26
+**Update Time**: 2025-12-29
 **Repository**: https://github.com/yuzhiqiang1993/immersionbar
 
 If this project helps you, please give it a ⭐️ Star to support!

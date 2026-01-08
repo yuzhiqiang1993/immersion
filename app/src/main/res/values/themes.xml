@@ -7,15 +7,14 @@
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
         <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color - 设置为透明以支持 Edge-to-Edge -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <!-- 确保状态栏不会被系统覆盖 -->
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <!-- Android 13+ 禁用系统强制对比度，确保透明状态栏生效 -->
-        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
-        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
-        <!-- Customize your theme here. -->
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:navigationBarColor">@android:color/white</item>
+<!--        &lt;!&ndash; 确保状态栏不会被系统覆盖 &ndash;&gt;-->
+<!--        <item name="android:windowDrawsSystemBarBackgrounds">true</item>-->
+<!--        &lt;!&ndash; Android 13+ 禁用系统强制对比度，确保透明状态栏生效 &ndash;&gt;-->
+<!--        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>-->
+<!--        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>-->
+<!--        &lt;!&ndash; Customize your theme here. &ndash;&gt;-->
     </style>
 
     <!-- Theme for FragmentDemoActivity with ActionBar support -->

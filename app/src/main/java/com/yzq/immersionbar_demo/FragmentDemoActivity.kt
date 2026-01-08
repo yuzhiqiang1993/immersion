@@ -12,7 +12,7 @@ class FragmentDemoActivity : AppCompatActivity() {
         setContentView(R.layout.activity_fragment_demo)
 
         // 启用沉浸式
-        ImmersionBar.enable(this)
+        ImmersionBar.enable(this, paddingNavigationBar = false)
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()

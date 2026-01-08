@@ -72,29 +72,32 @@ class DrawerDemoActivity : AppCompatActivity() {
                     binding.drawerLayout.closeDrawers()
                     true
                 }
+
                 R.id.nav_settings -> {
                     showSettingsDialog()
                     binding.drawerLayout.closeDrawers()
                     true
                 }
+
                 R.id.nav_about -> {
                     showAboutDialog()
                     binding.drawerLayout.closeDrawers()
                     true
                 }
+
                 else -> false
             }
         }
     }
 
     private fun setupImmersionBar() {
-        // 启用沉浸式，不指定 rootView（让整个页面延伸到状态栏）
+        // 启用沉浸式
         ImmersionBar.enable(
             activity = this,
-            rootView = binding.toolbar,
             darkStatusBarText = isDarkStatusBarText,
             showStatusBar = true,
-            showNavigationBar = true
+            showNavigationBar = true,
+            paddingNavigationBar = false
         )
 
         // 手动处理 Toolbar 的 WindowInsets
@@ -131,7 +134,7 @@ class DrawerDemoActivity : AppCompatActivity() {
         val headerView = binding.navView.getHeaderView(0)
         ViewCompat.setOnApplyWindowInsetsListener(headerView) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            
+
             // 给 Header 添加顶部 Padding，避免被状态栏遮挡
             view.setPadding(
                 view.paddingLeft,
@@ -139,7 +142,7 @@ class DrawerDemoActivity : AppCompatActivity() {
                 view.paddingRight,
                 view.paddingBottom
             )
-            
+
             insets
         }
 
@@ -158,7 +161,7 @@ class DrawerDemoActivity : AppCompatActivity() {
         // 切换深色主题按钮
         binding.btnToggleTheme.setOnClickListener {
             isDarkStatusBarText = !isDarkStatusBarText
-            
+
             // 改变背景颜色演示效果
             val bgColor = if (isDarkStatusBarText) Color.WHITE else Color.parseColor("#2C2C2C")
             applyBackgroundColor(bgColor)
@@ -174,7 +177,6 @@ class DrawerDemoActivity : AppCompatActivity() {
         binding.switchShowStatus.setOnCheckedChangeListener { _, isChecked ->
             ImmersionBar.enable(
                 activity = this,
-                rootView = null,
                 darkStatusBarText = isDarkStatusBarText,
                 showStatusBar = isChecked,
                 showNavigationBar = true
@@ -186,8 +188,9 @@ class DrawerDemoActivity : AppCompatActivity() {
         currentBackgroundColor = color
 
         // 平滑过渡背景颜色
-        val currentColor = (binding.mainContent.background as? android.graphics.drawable.ColorDrawable)?.color
-            ?: Color.WHITE
+        val currentColor =
+            (binding.mainContent.background as? android.graphics.drawable.ColorDrawable)?.color
+                ?: Color.WHITE
 
         ValueAnimator.ofArgb(currentColor, color).apply {
             duration = 300
@@ -221,22 +224,38 @@ class DrawerDemoActivity : AppCompatActivity() {
             darkenColor(bgColor, 0.8f)
         }
         binding.toolbar.setBackgroundColor(toolbarColor)
-        
+
         // 根据 Toolbar 背景色判断是否为浅色
         val isToolbarLight = isLightColor(toolbarColor)
-        
+
         // Debug: 打印颜色信息
-        android.util.Log.d("DrawerDemo", "Main bg: ${String.format("#%06X", 0xFFFFFF and bgColor)}, Toolbar: ${String.format("#%06X", 0xFFFFFF and toolbarColor)}, isLight: $isToolbarLight")
-        
+        android.util.Log.d(
+            "DrawerDemo",
+            "Main bg: ${
+                String.format(
+                    "#%06X",
+                    0xFFFFFF and bgColor
+                )
+            }, Toolbar: ${
+                String.format(
+                    "#%06X",
+                    0xFFFFFF and toolbarColor
+                )
+            }, isLight: $isToolbarLight"
+        )
+
         // 根据 Toolbar 背景色设置标题和图标颜色
         val toolbarContentColor = if (isToolbarLight) Color.parseColor("#212121") else Color.WHITE
-        android.util.Log.d("DrawerDemo", "Toolbar content color: ${String.format("#%06X", 0xFFFFFF and toolbarContentColor)}")
-        
+        android.util.Log.d(
+            "DrawerDemo",
+            "Toolbar content color: ${String.format("#%06X", 0xFFFFFF and toolbarContentColor)}"
+        )
+
         binding.toolbar.setTitleTextColor(toolbarContentColor)
-        
+
         // 设置 DrawerToggle 图标颜色（汉堡菜单图标）
         toggle.drawerArrowDrawable.color = toolbarContentColor
-        
+
         // 根据 Toolbar 背景色设置状态栏文字颜色
         val shouldUseDarkStatusText = isToolbarLight
         if (shouldUseDarkStatusText != isDarkStatusBarText) {
@@ -293,7 +312,6 @@ class DrawerDemoActivity : AppCompatActivity() {
                 isDarkStatusBarText = switchDarkStatus.isChecked
                 ImmersionBar.enable(
                     activity = this,
-                    rootView = null,
                     darkStatusBarText = isDarkStatusBarText,
                     showStatusBar = switchShowStatus.isChecked,
                     showNavigationBar = switchShowNav.isChecked

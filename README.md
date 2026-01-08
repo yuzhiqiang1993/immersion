@@ -15,16 +15,21 @@
 - 🔧 **灵活配置**: 支持状态栏、导航栏独立控制
 - 🌙 **智能适配**: 自动处理深色/浅色状态栏文字
 - 📊 **实时信息**: 提供状态栏/导航栏高度等系统信息
+- 🔄 **动态切换**: 支持运行时启用/禁用沉浸式模式
 
 ## 📦 安装
 
 在模块的 `build.gradle.kts` 文件中添加依赖：
 
+> 查看最新版本：[Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar)
+
 ```kotlin
 dependencies {
-    implementation("com.xeonyu:immersionbar:1.0.0")
+    implementation("com.xeonyu:immersionbar:latest_version")
 }
 ```
+
+将 `latest_version` 替换为上述链接中的最新版本号（例如：`1.0.0`）
 
 ## 🚀 快速开始
 
@@ -36,14 +41,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 启用沉浸式模式
-        ImmersionBar.enable(
-            activity = this,
-            rootView = findViewById(R.id.content_container), // 需要添加状态栏 padding 的根视图，以免覆盖状态栏
-            darkStatusBarText = true,  // 深色文字，适合浅色背景
-            showStatusBar = true,      // 显示状态栏
-            showNavigationBar = true   // 显示导航栏
-        )
+        // 启用沉浸式模式（默认：导航栏自动 padding，状态栏透明）
+        ImmersionBar.enable(this)
     }
 }
 ```
@@ -57,8 +56,9 @@ class MainActivity : AppCompatActivity() {
 ```kotlin
 ImmersionBar.enable(
     activity: Activity,                    // 必需 - 目标 Activity 实例
-    rootView: View? = null,                // 可选 - 需要应用 Insets 的视图
-    darkStatusBarText: Boolean = true,     // 可选 - 状态栏文字是否为深色
+    paddingStatusBar: Boolean = false,      // 可选 - 是否添加状态栏 padding
+    paddingNavigationBar: Boolean = true,    // 可选 - 是否添加导航栏 padding
+    darkStatusBarText: Boolean = true,     // 可选 - 状态栏文字颜色模式
     showStatusBar: Boolean = true,         // 可选 - 是否显示状态栏
     showNavigationBar: Boolean = true      // 可选 - 是否显示导航栏
 )
@@ -69,22 +69,34 @@ ImmersionBar.enable(
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | **activity** | `Activity` | 必需 | 需要设置沉浸式的 Activity 实例。通常传入 `this` |
-| **rootView** | `View?` | `null` | 需要自动添加系统栏 padding 的视图。<br>• **传入值**：自动为该视图添加状态栏和导航栏高度的 padding<br>• **null**：不自动处理 padding，内容会延伸到系统栏下方<br>• **常见用法**：传入根布局或内容容器，避免内容被系统栏遮挡 |
+| **paddingStatusBar** | `Boolean` | `false` | 是否为状态栏添加顶部 padding。<br>• **false**：内容蔓延到状态栏（默认）<br>• **true**：添加 padding 避开状态栏 |
+| **paddingNavigationBar** | `Boolean` | `true` | 是否为导航栏添加底部 padding。<br>• **true**：添加 padding 避开导航栏（推荐，默认）<br>• **false**：内容蔓延到导航栏 |
 | **darkStatusBarText** | `Boolean` | `true` | 状态栏文字颜色模式。<br>• **true**：深色文字（适合白色/浅色背景）<br>• **false**：浅色文字（适合黑色/深色背景）<br>• **注意**：仅在 Android 6.0+ 生效 |
 | **showStatusBar** | `Boolean` | `true` | 是否显示状态栏。<br>• **true**：显示状态栏<br>• **false**：隐藏状态栏<br>• **隐藏时**：可通过下滑手势临时唤出 |
 | **showNavigationBar** | `Boolean` | `true` | 是否显示导航栏。<br>• **true**：显示导航栏<br>• **false**：隐藏导航栏<br>• **隐藏时**：可通过上滑手势临时唤出 |
 
-### 辅助方法
+### 禁用沉浸式 - ImmersionBar.disable()
 
-#### WindowInsets 相关方法
+禁用沉浸式模式，恢复到默认状态（系统栏白色，内容不延伸）。
 
 ```kotlin
-// 手动为指定视图应用 WindowInsets（添加系统栏高度的 padding）
-ImmersionBar.applyWindowInsets(view: View)
-
-// 移除视图的 WindowInsets 监听器
-ImmersionBar.removeWindowInsets(view: View)
+ImmersionBar.disable(activity: Activity)
 ```
+
+### 更新系统栏状态 - ImmersionBar.updateSystemBars()
+
+动态更新系统栏的显示/隐藏状态和文字颜色，无论沉浸式是否启用都有效。
+
+```kotlin
+ImmersionBar.updateSystemBars(
+    activity: Activity,                    // 目标 Activity
+    showStatusBar: Boolean = true,         // 是否显示状态栏
+    showNavigationBar: Boolean = true,     // 是否显示导航栏
+    darkStatusBarText: Boolean = true      // 状态栏文字是否为深色
+)
+```
+
+### 辅助方法
 
 #### 状态栏文字控制
 
@@ -114,7 +126,9 @@ val hasNotch = ImmersionBar.hasNotch()
 
 ## 🎨 使用场景
 
-### 1. 完整沉浸式布局
+### 1. 推荐配置 (Demo默认效果)
+
+这种配置方式既保留了沉浸感（内容延伸到底部），又避免了顶部内容被状态栏遮挡。
 
 ```kotlin
 class MainActivity : AppCompatActivity() {
@@ -122,73 +136,126 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 完整沉浸式：内容延伸到系统栏下方，自动处理 padding
+        // 现代化沉浸式：
+        // 1. 状态栏添加 padding，避免内容被遮挡
+        // 2. 导航栏不加 padding，内容延伸到底部（配合透明导航栏）
         ImmersionBar.enable(
             activity = this,
-            rootView = findViewById(R.id.content_container),
-            darkStatusBarText = true,
-            showStatusBar = true,
-            showNavigationBar = true
+            paddingStatusBar = true,      // 避开状态栏
+            paddingNavigationBar = false, // 延伸到导航栏
+            darkStatusBarText = true
         )
     }
 }
 ```
 
-### 2. 隐藏导航栏
+### 2. 完全全屏 (内容延伸到所有区域)
+
+```kotlin
+// 内容延伸到所有系统栏下方
+ImmersionBar.enable(
+    activity = this,
+    paddingStatusBar = false,     // 延伸到状态栏
+    paddingNavigationBar = false, // 延伸到导航栏
+    darkStatusBarText = true
+)
+```
+
+### 3. 传统沉浸式 (保守模式)
+
+```kotlin
+// 类似传统 FitsSystemWindows=true 的效果
+ImmersionBar.enable(
+    activity = this,
+    paddingStatusBar = true,      // 避开状态栏
+    paddingNavigationBar = true,  // 避开导航栏
+    darkStatusBarText = true
+)
+```
+
+### 4. 隐藏导航栏
 
 ```kotlin
 // 隐藏导航栏，保持状态栏可见
 ImmersionBar.enable(
     activity = this,
-    rootView = binding.contentContainer,
-    darkStatusBarText = true,
     showStatusBar = true,
-    showNavigationBar = false  // 隐藏导航栏
+    showNavigationBar = false, // 隐藏导航栏
+    paddingNavigationBar = false // 既然隐藏了，通常不需要 padding
 )
 ```
 
-### 3. 深色背景配合浅色文字
+### 5. 深色背景配合浅色文字
 
 ```kotlin
 // 深色背景使用浅色状态栏文字
 ImmersionBar.enable(
     activity = this,
-    rootView = binding.rootView,
+    paddingStatusBar = true,
     darkStatusBarText = false,  // 浅色文字适合深色背景
-    showStatusBar = true,
-    showNavigationBar = true
 )
 ```
 
-### 4. 在 Fragment 中使用
+### 6. 动态切换沉浸式模式
 
 ```kotlin
-class MyFragment : Fragment() {
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+class MainActivity : AppCompatActivity() {
 
-        // 为 Fragment 的根视图应用 WindowInsets
-        ImmersionBar.applyWindowInsets(view)
+    private var isImmersionEnabled = true
+
+    private fun toggleImmersion() {
+        if (isImmersionEnabled) {
+            // 禁用沉浸式
+            ImmersionBar.disable(this)
+            // 禁用后仍可控制系统栏显示/隐藏
+            ImmersionBar.updateSystemBars(
+                activity = this,
+                darkStatusBarText = true,
+                showStatusBar = true,
+                showNavigationBar = true
+            )
+        } else {
+            // 启用沉浸式
+            ImmersionBar.enable(
+                activity = this,
+                paddingStatusBar = true,
+                paddingNavigationBar = false
+            )
+        }
+        isImmersionEnabled = !isImmersionEnabled
     }
 }
 ```
 
-### 5. 动态切换主题
+### 7. 动态切换主题
 
 ```kotlin
 class ThemedActivity : AppCompatActivity() {
     private fun toggleTheme() {
-        val isDarkBackground = currentTheme == Theme.DARK
+        val isLightTheme = currentTheme == Theme.LIGHT
 
         // 更新背景颜色
         binding.rootView.setBackgroundColor(
-            if (isDarkBackground) Color.BLACK else Color.WHITE
+            if (isLightTheme) Color.WHITE else Color.BLACK
         )
 
         // 同步更新状态栏文字颜色
-        ImmersionBar.setStatusBarTextDark(this, !isDarkBackground)
+        ImmersionBar.setStatusBarTextDark(this, isLightTheme)
     }
 }
+```
+
+### 8. 全屏视频/图片查看器
+
+```kotlin
+// 完全沉浸式：隐藏所有系统栏 & 内容延伸
+ImmersionBar.enable(
+    activity = this,
+    showStatusBar = false,     // 隐藏状态栏
+    showNavigationBar = false, // 隐藏导航栏
+    paddingStatusBar = false,
+    paddingNavigationBar = false
+)
 ```
 
 ## 💡 最佳实践
@@ -196,41 +263,63 @@ class ThemedActivity : AppCompatActivity() {
 ### 推荐配置组合
 
 ```kotlin
-// 1. 大多数应用的推荐配置
+// 1. 现代化 Edge-to-Edge（推荐）
 ImmersionBar.enable(
     activity = this,
-    rootView = binding.contentContainer,
-    darkStatusBarText = true,
-    showStatusBar = true,
-    showNavigationBar = true
+    paddingStatusBar = true,      // 顶部避让
+    paddingNavigationBar = false  // 底部延伸
 )
 
-// 2. 全屏视频/图片查看器
+// 2. 全屏阅读/视频
 ImmersionBar.enable(
     activity = this,
-    rootView = null,  // 不需要 padding，内容完全延伸
-    darkStatusBarText = false,
-    showStatusBar = false,    // 隐藏状态栏
-    showNavigationBar = false // 隐藏导航栏
-)
-
-// 3. 阅读类应用（可隐藏导航栏）
-ImmersionBar.enable(
-    activity = this,
-    rootView = binding.contentContainer,
-    darkStatusBarText = isLightTheme,
-    showStatusBar = true,
-    showNavigationBar = false  // 隐藏导航栏获得更大阅读空间
+    showStatusBar = false,
+    showNavigationBar = false,
+    paddingStatusBar = false,
+    paddingNavigationBar = false
 )
 ```
 
 ### 注意事项
 
-1. **rootView 参数**：大多数情况下都应该传入，避免内容被系统栏遮挡
+1. **paddingNavigationBar 参数**：
+   - 默认为 `true`（添加 padding）：内容不延伸到导航栏区域（推荐用于常规页面）
+   - 设置为 `false`（不添加 padding）：内容延伸到导航栏区域（推荐用于沉浸式主页/详情页）
+
 2. **版本兼容**：`darkStatusBarText` 仅在 Android 6.0+ 生效
+
 3. **手势导航**：隐藏的系统栏可通过手势随时唤出
+
 4. **性能优化**：避免在 `onCreate` 外频繁调用 `enable()` 方法
 
+5. **禁用沉浸式**：`disable()` 后系统栏会恢复为白色，内容不再延伸到系统栏下方
+
+6. **Padding 参数依赖关系**：
+   - `paddingStatusBar` 和 `paddingNavigationBar` 参数仅在沉浸式模式开启时有效
+   - 关闭沉浸式模式时，padding 设置会自动失效
+   - 在实现 UI 开关时，建议将 padding 开关的启用状态绑定到沉浸式开关状态
+   - 示例代码：
+     ```kotlin
+     // 沉浸式关闭时，禁用并关闭 padding 开关
+     if (!isChecked) {
+         binding.switchPaddingStatusBar.isChecked = false
+         binding.switchPaddingNavBar.isChecked = false
+     }
+     // 根据 immersive 状态控制 padding 开关是否可用
+     binding.switchPaddingStatusBar.isEnabled = isChecked
+     binding.switchPaddingNavBar.isEnabled = isChecked
+     ```
+
+## 🔄 版本更新
+
+### v1.0.0 (2025-12-29)
+
+- ✨ 首次发布
+- 🚀 基于 Android 15+ Edge-to-Edge 模式
+- 📱 支持 API 21+ (Android 5.0+)
+- 🎨 简洁易用的 API 设计
+- 🌙 自动处理深色/浅色状态栏文字
+- 🔄 支持运行时启用/禁用沉浸式模式
 
 ## 📄 许可证
 
@@ -240,7 +329,7 @@ ImmersionBar.enable(
 
 **作者**: [yuzhiqiang](https://github.com/yuzhiqiang1993)
 **版本**: 1.0.0
-**更新时间**: 2025-11-26
+**更新时间**: 2025-12-29
 **仓库地址**: https://github.com/yuzhiqiang1993/immersionbar
 
 如果这个项目对您有帮助，请给个 ⭐️ Star 支持一下！

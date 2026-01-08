@@ -19,7 +19,7 @@ class ViewPagerDemoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // 启用沉浸式
-        ImmersionBar.enable(this)
+        ImmersionBar.enable(this, paddingNavigationBar = false)
 
         val colors = listOf(
             Color.parseColor("#F44336"), // Red

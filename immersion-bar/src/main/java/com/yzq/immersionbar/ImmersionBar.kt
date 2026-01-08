@@ -3,6 +3,7 @@ package com.yzq.immersionbar
 import android.app.Activity
 import android.content.Context
 import android.view.View
+import com.yzq.immersionbar.InsetsDelegate
 
 
 /**
@@ -15,48 +16,41 @@ import android.view.View
 object ImmersionBar {
 
     /**
-     * 启用沉浸式模式 (Edge-to-Edge)
+     * 启用沉浸式模式
      *
      * @param activity 目标 Activity
-     * @param rootView 需要应用 Insets 的视图（传入则自动添加 padding，不传则不处理,不传 view 会延伸到状态栏，大多数情况是要传的）
-     * @param darkStatusBarText 状态栏文字是否为深色（true=深色文字，适合浅色（例如白色）背景）
+     * @param paddingStatusBar 是否添加顶部 padding 避开状态栏（true=添加 padding 避开，false=蔓延到状态栏，默认 false）
+     * @param paddingNavigationBar 是否添加底部 padding 避开导航栏（true=添加 padding 避开，false=蔓延到导航栏，默认 true）
+     * @param darkStatusBarText 状态栏文字是否为深色（true=深色文字，适合浅色背景）
      * @param showStatusBar 是否显示状态栏
      * @param showNavigationBar 是否显示导航栏
      */
     fun enable(
         activity: Activity,
-        rootView: View? = null,
+        paddingStatusBar: Boolean = false,
+        paddingNavigationBar: Boolean = true,
         darkStatusBarText: Boolean = true,
         showStatusBar: Boolean = true,
         showNavigationBar: Boolean = true
     ) {
-        ImmersionDelegate.enableEdgeToEdge(activity)
+        // 保存原始导航栏颜色，以便 disable 时恢复
+        InsetsDelegate.saveOriginalNavigationBarColor(activity)
 
-        if (rootView != null) {
-            InsetsDelegate.applyWindowInsets(rootView)
-        }
+        ImmersionDelegate.enableEdgeToEdge(activity, !paddingNavigationBar)
 
         ImmersionDelegate.updateSystemBars(
             activity,
-            showStatusBar,
-            showNavigationBar,
-            darkStatusBarText
+            showStatusBar = showStatusBar,
+            showNavigationBar = showNavigationBar,
+            darkStatusBarText = darkStatusBarText
         )
+
+        // 处理状态栏 insets
+        // 处理 insets
+        InsetsDelegate.handleInsets(activity, paddingStatusBar, paddingNavigationBar)
+
     }
 
-    /**
-     * 手动应用 WindowInsets 到指定视图 (添加 Padding)
-     */
-    fun applyWindowInsets(view: View) {
-        InsetsDelegate.applyWindowInsets(view)
-    }
-
-    /**
-     * 移除 WindowInsets 监听器
-     */
-    fun removeWindowInsets(view: View) {
-        InsetsDelegate.removeWindowInsets(view)
-    }
 
     /**
      * 设置状态栏文字颜色
@@ -65,6 +59,37 @@ object ImmersionBar {
      */
     fun setStatusBarTextDark(activity: Activity, isDark: Boolean = true) {
         ImmersionDelegate.setStatusBarLightMode(activity, isDark)
+    }
+
+    /**
+     * 禁用沉浸式模式，恢复到默认状态（内容不延伸到状态栏）
+     *
+     * @param activity 目标 Activity
+     */
+    fun disable(activity: Activity) {
+        ImmersionDelegate.disableEdgeToEdge(activity)
+    }
+
+    /**
+     * 更新系统栏显示/隐藏状态
+     *
+     * @param activity 目标 Activity
+     * @param showStatusBar 是否显示状态栏
+     * @param showNavigationBar 是否显示导航栏
+     * @param darkStatusBarText 状态栏文字是否为深色
+     */
+    fun updateSystemBars(
+        activity: Activity,
+        showStatusBar: Boolean = true,
+        showNavigationBar: Boolean = true,
+        darkStatusBarText: Boolean = true
+    ) {
+        ImmersionDelegate.updateSystemBars(
+            activity,
+            showStatusBar = showStatusBar,
+            showNavigationBar = showNavigationBar,
+            darkStatusBarText = darkStatusBarText
+        )
     }
 
     /**

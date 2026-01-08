@@ -58,13 +58,13 @@ class CoordinatorDemoActivity : AppCompatActivity() {
     }
 
     private fun setupImmersionBar() {
-        // 为整个 Coordinator 添加沉浸式效果，不指定 rootView
+        // 启用沉浸式
         ImmersionBar.enable(
             activity = this,
-            rootView = null,
             darkStatusBarText = true,
             showStatusBar = true,
-            showNavigationBar = true
+            showNavigationBar = true,
+            paddingNavigationBar = true
         )
 
         // 手动处理 WindowInsets，让 Toolbar 成为沉浸式 View
@@ -190,7 +190,6 @@ class CoordinatorDemoActivity : AppCompatActivity() {
         binding.switchShowStatus.setOnCheckedChangeListener { _, isChecked ->
             ImmersionBar.enable(
                 activity = this,
-                rootView = null,
                 darkStatusBarText = isDarkStatusBarText,
                 showStatusBar = isChecked,
                 showNavigationBar = true
