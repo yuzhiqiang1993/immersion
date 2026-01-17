@@ -184,6 +184,39 @@
             </LinearLayout>
 
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:orientation="horizontal">
+
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_full_screen_dialog"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:text="Full Screen Dialog"
+                    android:textSize="12sp"
+                    app:cornerRadius="28dp" />
+
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_bottom_sheet"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Bottom Sheet"
+                    android:textSize="12sp"
+                    app:cornerRadius="28dp" />
+
+            </LinearLayout>
+
+
             <TextView
                 android:id="@+id/tv_info"
                 android:layout_width="match_parent"

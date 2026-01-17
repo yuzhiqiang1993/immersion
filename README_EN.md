@@ -128,6 +128,40 @@ val hasNavigationBar = ImmersionBar.hasNavigationBar(context: Context)
 val hasNotch = ImmersionBar.hasNotch()
 ```
 
+### Dialog Immersion
+
+#### Full Screen Dialog
+
+```kotlin
+// Enable full screen dialog immersion (content extends under system bars)
+ImmersionBar.enableFullScreenDialog(
+    dialog: Dialog,                       // Target Dialog
+    darkStatusBarText: Boolean = true,    // Whether status bar text is dark
+    paddingStatusBar: Boolean = false,    // Whether to add status bar padding
+    paddingNavigationBar: Boolean = false // Whether to add navigation bar padding
+)
+```
+
+#### Bottom Sheet
+
+```kotlin
+// Enable bottom sheet immersion (navigation bar transparent)
+ImmersionBar.enableBottomSheetDialog(
+    dialog: Dialog,                       // Target Dialog
+    paddingNavigationBar: Boolean = false // Whether to add navigation bar padding
+)
+```
+
+#### Dialog Status Bar Text
+
+```kotlin
+// Dynamically set dialog status bar text color
+ImmersionBar.setDialogStatusBarTextDark(
+    dialog: Dialog,        // Target Dialog
+    isDark: Boolean = true // true=dark text, false=light text
+)
+```
+
 ## 🎨 Usage Scenarios
 
 ### 1. Recommended Configuration for Most Apps
@@ -252,6 +286,32 @@ ImmersionBar.enable(
 )
 ```
 
+### 9. Full Screen Dialog
+
+```kotlin
+// Create full screen dialog
+val dialog = Dialog(this, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen)
+dialog.setContentView(R.layout.dialog_fullscreen)
+
+// One line to enable immersion
+ImmersionBar.enableFullScreenDialog(dialog)
+
+dialog.show()
+```
+
+### 10. Bottom Sheet
+
+```kotlin
+// Create bottom sheet dialog
+val bottomSheet = BottomSheetDialog(this)
+bottomSheet.setContentView(R.layout.dialog_bottom_sheet)
+
+// One line to enable immersion (navigation bar transparent)
+ImmersionBar.enableBottomSheetDialog(bottomSheet)
+
+bottomSheet.show()
+```
+
 ## 💡 Best Practices
 
 ### Recommended Configuration Combinations
@@ -358,11 +418,6 @@ Welcome to submit Issues and Pull Requests!
 This project is licensed under the Apache License 2.0. For details, please see the [LICENSE](LICENSE) file.
 
 ---
-
-**Author**: [yuzhiqiang](https://github.com/yuzhiqiang1993)
-**Version**: 1.0.0
-**Update Time**: 2025-12-29
-**Repository**: https://github.com/yuzhiqiang1993/immersionbar
 
 If this project helps you, please give it a ⭐️ Star to support!
 

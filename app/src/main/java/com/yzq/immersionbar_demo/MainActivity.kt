@@ -1,5 +1,6 @@
 package com.yzq.immersionbar_demo
 
+import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
@@ -8,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.yzq.immersionbar.ImmersionBar
 import com.yzq.immersionbar_demo.databinding.ActivityMainBinding
 import java.util.Random
@@ -98,6 +100,42 @@ class MainActivity : AppCompatActivity() {
         binding.btnCoordinator.setOnClickListener {
             startActivity(Intent(this, CoordinatorDemoActivity::class.java))
         }
+
+        // Full Screen Dialog 演示
+        binding.btnFullScreenDialog.setOnClickListener {
+            showFullScreenDialog()
+        }
+
+        // Bottom Sheet Dialog 演示
+        binding.btnBottomSheet.setOnClickListener {
+            showBottomSheetDialog()
+        }
+    }
+
+    private fun showFullScreenDialog() {
+        // 使用 Theme.Translucent.NoTitleBar.Fullscreen 确保 Dialog 本身是全屏的
+        val dialog = Dialog(this, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen)
+        dialog.setContentView(R.layout.dialog_full_screen)
+        
+        // 设置关闭按钮
+        dialog.findViewById<android.view.View>(R.id.btnClose).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        // 启用沉浸式
+        ImmersionBar.enableFullScreenDialog(dialog)
+        
+        dialog.show()
+    }
+
+    private fun showBottomSheetDialog() {
+        val bottomSheet = BottomSheetDialog(this)
+        bottomSheet.setContentView(R.layout.dialog_bottom_sheet)
+
+        // 启用沉浸式
+        ImmersionBar.enableBottomSheetDialog(bottomSheet)
+
+        bottomSheet.show()
     }
 
 

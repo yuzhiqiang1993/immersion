@@ -1,6 +1,7 @@
 package com.yzq.immersionbar
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Context
 import android.view.View
 import com.yzq.immersionbar.InsetsDelegate
@@ -111,4 +112,54 @@ object ImmersionBar {
      * 是否有刘海屏
      */
     fun hasNotch(): Boolean = BarUtils.hasNotch()
+
+    // ==================== Dialog 相关 API ====================
+
+    /**
+     * 启用全屏 Dialog 沉浸式模式
+     * 内容延伸到状态栏和导航栏下方，系统栏透明
+     *
+     * @param dialog 目标 Dialog
+     * @param darkStatusBarText 状态栏文字是否为深色（true=深色文字，适合浅色背景）
+     * @param paddingStatusBar 是否添加顶部 padding 避开状态栏
+     * @param paddingNavigationBar 是否添加底部 padding 避开导航栏
+     */
+    fun enableFullScreenDialog(
+        dialog: Dialog,
+        darkStatusBarText: Boolean = true,
+        paddingStatusBar: Boolean = false,
+        paddingNavigationBar: Boolean = false
+    ) {
+        DialogImmersionDelegate.enableFullScreen(dialog, darkStatusBarText)
+        if (paddingStatusBar || paddingNavigationBar) {
+            DialogImmersionDelegate.handleInsets(dialog, paddingStatusBar, paddingNavigationBar)
+        }
+    }
+
+    /**
+     * 启用底部弹窗 Dialog 沉浸式模式
+     * 导航栏透明，内容延伸到导航栏下方
+     *
+     * @param dialog 目标 Dialog（通常是 BottomSheetDialog）
+     * @param paddingNavigationBar 是否添加底部 padding 避开导航栏
+     */
+    fun enableBottomSheetDialog(
+        dialog: Dialog,
+        paddingNavigationBar: Boolean = false
+    ) {
+        DialogImmersionDelegate.enableBottomSheet(dialog)
+        if (paddingNavigationBar) {
+            DialogImmersionDelegate.handleInsets(dialog, paddingStatusBar = false, paddingNavigationBar = true)
+        }
+    }
+
+    /**
+     * 设置 Dialog 状态栏文字颜色
+     *
+     * @param dialog 目标 Dialog
+     * @param isDark true=深色文字（适合浅色背景），false=浅色文字（适合深色背景）
+     */
+    fun setDialogStatusBarTextDark(dialog: Dialog, isDark: Boolean = true) {
+        DialogImmersionDelegate.setStatusBarTextDark(dialog, isDark)
+    }
 }

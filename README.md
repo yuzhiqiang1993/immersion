@@ -124,6 +124,40 @@ val hasNavigationBar = ImmersionBar.hasNavigationBar(context: Context)
 val hasNotch = ImmersionBar.hasNotch()
 ```
 
+### Dialog 沉浸式
+
+#### 全屏 Dialog
+
+```kotlin
+// 启用全屏 Dialog 沉浸式（内容延伸到系统栏下方）
+ImmersionBar.enableFullScreenDialog(
+    dialog: Dialog,                       // 目标 Dialog
+    darkStatusBarText: Boolean = true,    // 状态栏文字是否为深色
+    paddingStatusBar: Boolean = false,    // 是否添加状态栏 padding
+    paddingNavigationBar: Boolean = false // 是否添加导航栏 padding
+)
+```
+
+#### 底部弹窗
+
+```kotlin
+// 启用底部弹窗沉浸式（导航栏透明）
+ImmersionBar.enableBottomSheetDialog(
+    dialog: Dialog,                       // 目标 Dialog
+    paddingNavigationBar: Boolean = false // 是否添加导航栏 padding
+)
+```
+
+#### Dialog 状态栏文字
+
+```kotlin
+// 动态设置 Dialog 状态栏文字颜色
+ImmersionBar.setDialogStatusBarTextDark(
+    dialog: Dialog,        // 目标 Dialog
+    isDark: Boolean = true // true=深色文字，false=浅色文字
+)
+```
+
 ## 🎨 使用场景
 
 ### 1. 推荐配置 (Demo默认效果)
@@ -258,6 +292,32 @@ ImmersionBar.enable(
 )
 ```
 
+### 9. 全屏 Dialog
+
+```kotlin
+// 创建全屏 Dialog
+val dialog = Dialog(this, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen)
+dialog.setContentView(R.layout.dialog_fullscreen)
+
+// 一行代码启用沉浸式
+ImmersionBar.enableFullScreenDialog(dialog)
+
+dialog.show()
+```
+
+### 10. 底部弹窗
+
+```kotlin
+// 创建底部弹窗
+val bottomSheet = BottomSheetDialog(this)
+bottomSheet.setContentView(R.layout.dialog_bottom_sheet)
+
+// 一行代码启用沉浸式（导航栏透明）
+ImmersionBar.enableBottomSheetDialog(bottomSheet)
+
+bottomSheet.show()
+```
+
 ## 💡 最佳实践
 
 ### 推荐配置组合
@@ -326,11 +386,6 @@ ImmersionBar.enable(
 本项目采用 Apache License 2.0 许可证。详情请查看 [LICENSE](LICENSE) 文件。
 
 ---
-
-**作者**: [yuzhiqiang](https://github.com/yuzhiqiang1993)
-**版本**: 1.0.0
-**更新时间**: 2025-12-29
-**仓库地址**: https://github.com/yuzhiqiang1993/immersionbar
 
 如果这个项目对您有帮助，请给个 ⭐️ Star 支持一下！
 
