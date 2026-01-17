@@ -1,113 +1,49 @@
 [versions]
 
-#AGP的版本
+# AGP的版本
 agp = "8.13.1"
 
-# AndroidX相关的稳定版本，组件依赖时使用
+# AndroidX 稳定版本（组件依赖时使用）
 androidxAppcompatStable = "1.6.1"
 activityStable = "1.7.2"
 androidxActivityKtxStable = "1.7.2"
-androidxFragmentKtxStable = "1.6.2"
-androidxLifecycleStable = "2.7.0"
-androidxVectordrawableStable = "1.1.0"
-androidxConstraintlayoutStable = "2.1.4"
-androidxAnnotationStable = "1.7.1"
-androidxCoreStable = "1.7.0"
 kotlinStable = "1.7.21"
-materialStable = "1.4.0"
-kotlinxCoroutinesStable = "1.6.4"
-kotlinxSerializationJsonStable = "1.5.0"
 
-
-#较新版本，App依赖时使用
+# AndroidX 较新版本（App依赖时使用）
 androidxAppcompat = "1.7.1"
-activity = "1.11.0"
 androidxActivityKtx = "1.11.0"
-androidxFragmentKtx = "1.8.9"
-androidxCollectionKtx = "1.5.0"
-androidxLifecycle = "2.9.4"
-androidxVectordrawable = "1.2.0"
 androidxConstraintlayout = "2.2.1"
-androidxAnnotation = "1.9.1"
-androidxMultidex = "2.0.1"
 androidxCore = "1.17.0"
-androidxCoreSplashscreen = "1.2.0"
-androidxCoordinatorlayout = "1.3.0"
-androidxSwiperefreshlayout = "1.1.0"
-androidxRecyclerview = "1.4.0"
-androidxViewpager2 = "1.1.0"
-androidxExifinterface = "1.4.1"
-androidxRoom = "2.8.3"
-androidxWebkit = "1.14.0"
-material = "1.13.0"
 cardview = "1.0.0"
+material = "1.13.0"
 
-#kotlin
+# Kotlin
 kotlin = "2.2.21"
-ksp = "2.2.20-2.0.4"
-kotlinxCoroutines = "1.10.2"
-kotlinxSerializationJson = "1.9.0"
 
-
+# Gradle 插件
 xeonBuildManager = "0.0.7"
 vanniktechPublish = "0.35.0"
 
 [libraries]
 
-# 稳定版本
+# 稳定版本（组件使用）
 androidx-appcompat-stable = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppcompatStable" }
 androidx-activity-stable = { group = "androidx.activity", name = "activity", version.ref = "activityStable" }
 androidx-activity-ktx-stable = { group = "androidx.activity", name = "activity-ktx", version.ref = "androidxActivityKtxStable" }
-androidx-fragment-ktx-stable = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidxFragmentKtxStable" }
-androidx-lifecycle-viewmodel-ktx-stable = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidxLifecycleStable" }
-androidx-lifecycle-livedata-ktx-stable = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidxLifecycleStable" }
-androidx-lifecycle-runtime-ktx-stable = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidxLifecycleStable" }
-androidx-vectordrawable-stable = { group = "androidx.vectordrawable", name = "vectordrawable", version.ref = "androidxVectordrawableStable" }
-androidx-constraintlayout-stable = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidxConstraintlayoutStable" }
-androidx-annotation-stable = { group = "androidx.annotation", name = "annotation", version.ref = "androidxAnnotationStable" }
-androidx-core-ktx-stable = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCoreStable" }
 kotlin-bom-stable = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlinStable" }
-kotlinx-coroutines-android-stable = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesStable" }
-kotlinx-serialization-json-stable = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJsonStable" }
 
-
-
-
-#androidX
+# 较新版本（App使用）
 google-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppcompat" }
-androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "androidxActivityKtx" }
-androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidxFragmentKtx" }
-androidx-collection-ktx = { group = "androidx.collection", name = "collection-ktx", version.ref = "androidxCollectionKtx" }
-androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidxLifecycle" }
-androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidxLifecycle" }
-#Lifecycles only (without ViewModel or LiveData)
-androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
-androidx-vectordrawable = { group = "androidx.vectordrawable", name = "vectordrawable", version.ref = "androidxVectordrawable" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidxConstraintlayout" }
-androidx-coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "androidxCoordinatorlayout" }
-androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidxAnnotation" }
-androidx-multidex = { group = "androidx.multidex", name = "multidex", version.ref = "androidxMultidex" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
-androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
-androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "androidxSwiperefreshlayout" }
-androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "androidxRecyclerview" }
-androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "androidxViewpager2" }
-androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "androidxExifinterface" }
-androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "androidxWebkit" }
-kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlin" }
-
-kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-#版本发布三方插件
 vanniktechPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechPublish" }
-#自定义的插件
 xeonyu-application = { id = "com.xeonyu.plugin.application", version.ref = "xeonBuildManager" }
 xeonyu-library = { id = "com.xeonyu.plugin.library", version.ref = "xeonBuildManager" }
