@@ -7,6 +7,7 @@ local.properties
 
 # Log/OS Files
 *.log
+logs/
 
 # Android Studio generated files and folders
 captures/
@@ -32,3 +33,24 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Kotlin
+.kotlin/
+
+# AI Assistant configs
+.claude/
+.gemini/
