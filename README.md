@@ -21,15 +21,15 @@
 
 在模块的 `build.gradle.kts` 文件中添加依赖：
 
-> 查看最新版本：[Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar)
+> 📢 **最新版本**：请访问 [Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar) 获取最新版本号。
 
 ```kotlin
 dependencies {
-    implementation("com.xeonyu:immersionbar:latest_version")
+    implementation("com.xeonyu:immersionbar:x.x.x")
 }
 ```
 
-将 `latest_version` 替换为上述链接中的最新版本号（例如：`1.0.0`）
+将 `x.x.x` 替换为最新版本号。
 
 ## 🚀 快速开始
 
@@ -370,16 +370,7 @@ ImmersionBar.enable(
      binding.switchPaddingNavBar.isEnabled = isChecked
      ```
 
-## 🔄 版本更新
 
-### v1.0.0 (2025-12-29)
-
-- ✨ 首次发布
-- 🚀 基于 Android 15+ Edge-to-Edge 模式
-- 📱 支持 API 21+ (Android 5.0+)
-- 🎨 简洁易用的 API 设计
-- 🌙 自动处理深色/浅色状态栏文字
-- 🔄 支持运行时启用/禁用沉浸式模式
 
 ## 📄 许可证
 

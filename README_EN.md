@@ -21,15 +21,15 @@ A modern Android immersion bar library based on the officially recommended Edge-
 
 Add the dependency to your module's `build.gradle.kts` file:
 
-> Check for the latest version: [Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar)
+> 📢 **Latest Version**: Please visit [Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar) to get the latest version number.
 
 ```kotlin
 dependencies {
-    implementation("com.xeonyu:immersionbar:latest_version")
+    implementation("com.xeonyu:immersionbar:x.x.x")
 }
 ```
 
-Replace `latest_version` with the latest version number from the link above (e.g., `1.0.0`)
+Replace `x.x.x` with the latest version number.
 
 ## 🚀 Quick Start
 
@@ -402,16 +402,7 @@ Welcome to submit Issues and Pull Requests!
 4. Push to branch: `git push origin feature/AmazingFeature`
 5. Submit Pull Request
 
-## 🔄 Version History
 
-### v1.0.0 (2025-12-29)
-
-- ✨ First release
-- 🚀 Based on Android 15+ Edge-to-Edge mode
-- 📱 Supports API 21+ (Android 5.0+)
-- 🎨 Simple and easy-to-use API design
-- 🌙 Automatically handle dark/light status bar text
-- 🔄 Support runtime enable/disable immersion mode
 
 ## 📄 License
 
