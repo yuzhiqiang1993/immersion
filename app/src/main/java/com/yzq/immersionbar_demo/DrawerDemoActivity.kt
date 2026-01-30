@@ -94,7 +94,6 @@ class DrawerDemoActivity : AppCompatActivity() {
         // 启用沉浸式
         ImmersionBar.enable(
             activity = this,
-            darkStatusBarText = isDarkStatusBarText,
             showStatusBar = true,
             showNavigationBar = true,
             paddingNavigationBar = false
@@ -177,7 +176,6 @@ class DrawerDemoActivity : AppCompatActivity() {
         binding.switchShowStatus.setOnCheckedChangeListener { _, isChecked ->
             ImmersionBar.enable(
                 activity = this,
-                darkStatusBarText = isDarkStatusBarText,
                 showStatusBar = isChecked,
                 showNavigationBar = true
             )
@@ -312,7 +310,6 @@ class DrawerDemoActivity : AppCompatActivity() {
                 isDarkStatusBarText = switchDarkStatus.isChecked
                 ImmersionBar.enable(
                     activity = this,
-                    darkStatusBarText = isDarkStatusBarText,
                     showStatusBar = switchShowStatus.isChecked,
                     showNavigationBar = switchShowNav.isChecked
                 )

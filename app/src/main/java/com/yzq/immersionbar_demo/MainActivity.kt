@@ -154,7 +154,6 @@ class MainActivity : AppCompatActivity() {
                 activity = this,
                 paddingStatusBar = binding.switchPaddingStatusBar.isChecked,
                 paddingNavigationBar = binding.switchPaddingNavBar.isChecked,
-                darkStatusBarText = binding.switchDarkStatusText.isChecked,
                 showStatusBar = binding.switchShowStatusBar.isChecked,
                 showNavigationBar = binding.switchShowNavBar.isChecked
             )
@@ -164,7 +163,6 @@ class MainActivity : AppCompatActivity() {
             // 禁用沉浸式后，仍需要更新系统栏显示/隐藏状态
             ImmersionBar.updateSystemBars(
                 activity = this,
-                darkStatusBarText = binding.switchDarkStatusText.isChecked,
                 showStatusBar = binding.switchShowStatusBar.isChecked,
                 showNavigationBar = binding.switchShowNavBar.isChecked
             )

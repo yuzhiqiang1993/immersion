@@ -21,7 +21,6 @@ object ImmersionBar {
      * @param activity 目标 Activity
      * @param paddingStatusBar 是否添加顶部 padding 避开状态栏（true=添加 padding 避开，false=蔓延到状态栏，默认 false）
      * @param paddingNavigationBar 是否添加底部 padding 避开导航栏（true=添加 padding 避开，false=蔓延到导航栏，默认 true）
-     * @param darkStatusBarText 状态栏文字是否为深色（true=深色文字，适合浅色背景）
      * @param showStatusBar 是否显示状态栏
      * @param showNavigationBar 是否显示导航栏
      */
@@ -29,20 +28,18 @@ object ImmersionBar {
         activity: Activity,
         paddingStatusBar: Boolean = false,
         paddingNavigationBar: Boolean = true,
-        darkStatusBarText: Boolean = true,
         showStatusBar: Boolean = true,
         showNavigationBar: Boolean = true
     ) {
-        // 保存原始导航栏颜色，以便 disable 时恢复
-        InsetsDelegate.saveOriginalNavigationBarColor(activity)
+        // 保存进入沉浸式前的系统栏样式，以便 disable 时恢复
+        InsetsDelegate.saveOriginalSystemBarStyle(activity)
 
-        ImmersionDelegate.enableEdgeToEdge(activity, !paddingNavigationBar)
+        ImmersionDelegate.enableEdgeToEdge(activity)
 
         ImmersionDelegate.updateSystemBars(
             activity,
             showStatusBar = showStatusBar,
-            showNavigationBar = showNavigationBar,
-            darkStatusBarText = darkStatusBarText
+            showNavigationBar = showNavigationBar
         )
 
         // 处理状态栏 insets
@@ -76,19 +73,16 @@ object ImmersionBar {
      * @param activity 目标 Activity
      * @param showStatusBar 是否显示状态栏
      * @param showNavigationBar 是否显示导航栏
-     * @param darkStatusBarText 状态栏文字是否为深色
      */
     fun updateSystemBars(
         activity: Activity,
         showStatusBar: Boolean = true,
-        showNavigationBar: Boolean = true,
-        darkStatusBarText: Boolean = true
+        showNavigationBar: Boolean = true
     ) {
         ImmersionDelegate.updateSystemBars(
             activity,
             showStatusBar = showStatusBar,
-            showNavigationBar = showNavigationBar,
-            darkStatusBarText = darkStatusBarText
+            showNavigationBar = showNavigationBar
         )
     }
 
