@@ -3,8 +3,6 @@ package com.yzq.immersionbar
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
-import android.view.View
-import com.yzq.immersionbar.InsetsDelegate
 
 
 /**
@@ -111,9 +109,7 @@ object ImmersionBar {
     /**
      * 是否有刘海屏
      */
-    fun hasNotch(): Boolean = BarUtils.hasNotch()
-
-    // ==================== Dialog 相关 API ====================
+    fun hasNotch(activity: Activity): Boolean = BarUtils.hasNotch(activity)
 
     /**
      * 启用全屏 Dialog 沉浸式模式

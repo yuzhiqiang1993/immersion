@@ -6,7 +6,7 @@ import android.os.Build
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.yzq.immersionbar.InsetsDelegate
+
 
 /**
  * @description:沉浸式逻辑委托类

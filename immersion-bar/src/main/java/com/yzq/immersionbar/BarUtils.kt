@@ -1,5 +1,6 @@
 package com.yzq.immersionbar
 
+import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.view.ViewConfiguration
@@ -54,7 +55,11 @@ internal object BarUtils {
     /**
      * 是否有刘海屏
      */
-    fun hasNotch(): Boolean {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+    fun hasNotch(activity: Activity): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val windowInsets = activity.window.decorView.rootWindowInsets
+            return windowInsets?.displayCutout != null
+        }
+        return false
     }
 }
