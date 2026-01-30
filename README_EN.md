@@ -7,21 +7,21 @@
 
 A modern Android immersion bar library based on the officially recommended Edge-to-Edge mode for Android 15+, providing a simple and easy-to-use API.
 
-## ✨ Features
+## Features
 
-- 🚀 **Modern Implementation**: Based on Android 15+ official Edge-to-Edge mode
-- 📱 **Wide Compatibility**: Supports API 21+ (Android 5.0+)
-- 🎨 **Simple API**: Chain calls, implement immersion with one line of code
-- 🔧 **Flexible Configuration**: Independent control of status bar and navigation bar
-- 🌙 **Smart Adaptation**: Automatically handle dark/light status bar text
-- 📊 **Real-time Information**: Provide status bar/navigation bar height and other system information
-- 🔄 **Dynamic Toggle**: Support runtime enable/disable immersion mode
+- **Modern Implementation**: Based on Android 15+ official Edge-to-Edge mode
+- **Wide Compatibility**: Supports API 21+ (Android 5.0+)
+- **Simple API**: Chain calls, implement immersion with one line of code
+- **Flexible Configuration**: Independent control of status bar and navigation bar
+- **Smart Adaptation**: Automatically handle dark/light status bar text
+- **Real-time Information**: Provide status bar/navigation bar height and other system information
+- **Dynamic Toggle**: Support runtime enable/disable immersion mode
 
-## 📦 Installation
+## Installation
 
 Add the dependency to your module's `build.gradle.kts` file:
 
-> 📢 **Latest Version**: Please visit [Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar) to get the latest version number.
+> **Latest Version**: Please visit [Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar) to get the latest version number.
 
 ```kotlin
 dependencies {
@@ -31,7 +31,7 @@ dependencies {
 
 Replace `x.x.x` with the latest version number.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Basic Usage
 
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-## 📖 API Documentation
+## API Documentation
 
 ### Core Method - ImmersionBar.enable()
 
@@ -128,6 +128,43 @@ val hasNavigationBar = ImmersionBar.hasNavigationBar(context: Context)
 val hasNotch = ImmersionBar.hasNotch()
 ```
 
+### Independent View Padding Control - applyInsetsPadding
+
+Independent of Activity immersion configuration, apply WindowInsets padding to any View individually.
+
+#### Usage Scenario: Full-screen Overlay (Loading/Error View)
+
+When Activity enables immersive mode (Edge-to-Edge), content extends below the status bar. If a full-screen Loading or Error page covers the screen, its top content (like a title bar) will be obscured by the status bar.
+
+At this time, you can use `applyInsetsPadding` to add padding to the top View of the overlay independently, without affecting the layout of the underlying main page.
+
+```kotlin
+// Add top padding to the title bar of Loading View to avoid status bar
+ImmersionBar.applyInsetsPadding(
+    view = binding.tvStatusTitle,
+    paddingStatusBar = true
+)
+```
+
+#### Method Definition
+
+```kotlin
+ImmersionBar.applyInsetsPadding(
+    view: View,
+    paddingStatusBar: Boolean = false,    // Whether to add status bar padding
+    paddingNavigationBar: Boolean = false // Whether to add navigation bar padding
+)
+
+// Clear padding, restore View's original padding
+ImmersionBar.clearInsetsPadding(view: View)
+```
+
+#### Core Features
+
+1.  **Independence**: Can be used independently, no need for Activity to enable `ImmersionBar.enable()`.
+2.  **Auto-cleanup**: Automatically listens to View attach/detach state, releases listener when View is removed to prevent memory leaks.
+3.  **Original Padding Protection**: Records original padding before application, restores automatically on clear or detach, suitable for dynamic Views or RecyclerView Items.
+
 ### Dialog Immersion
 
 #### Full Screen Dialog
@@ -162,7 +199,7 @@ ImmersionBar.setDialogStatusBarTextDark(
 )
 ```
 
-## 🎨 Usage Scenarios
+## Usage Scenarios
 
 ### 1. Recommended Configuration for Most Apps
 
@@ -312,7 +349,7 @@ ImmersionBar.enableBottomSheetDialog(bottomSheet)
 bottomSheet.show()
 ```
 
-## 💡 Best Practices
+## Best Practices
 
 ### Recommended Configuration Combinations
 
@@ -375,7 +412,7 @@ ImmersionBar.enable(
      binding.switchPaddingNavBar.isEnabled = isChecked
      ```
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 immersionbar/
@@ -392,7 +429,7 @@ immersionbar/
         └── ViewPagerDemoActivity.kt # ViewPager demo
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Welcome to submit Issues and Pull Requests!
 
@@ -404,13 +441,13 @@ Welcome to submit Issues and Pull Requests!
 
 
 
-## 📄 License
+## License
 
 This project is licensed under the Apache License 2.0. For details, please see the [LICENSE](LICENSE) file.
 
 ---
 
-If this project helps you, please give it a ⭐️ Star to support!
+If this project helps you, please give it a Star to support!
 
 ---
 

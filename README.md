@@ -7,21 +7,21 @@
 
 一个现代化的 Android 沉浸式状态栏库，基于 Android 官方推荐的 Edge-to-Edge 模式设计，提供简洁易用的 API。
 
-## ✨ 特性
+## 特性
 
-- 🚀 **现代化实现**: 基于 Android 15+ 官方推荐的 Edge-to-Edge 模式
-- 📱 **全面兼容**: 支持 API 21+ (Android 5.0+)
-- 🎨 **简洁 API**: 链式调用，一行代码实现沉浸式
-- 🔧 **灵活配置**: 支持状态栏、导航栏独立控制
-- 🌙 **智能适配**: 自动处理深色/浅色状态栏文字
-- 📊 **实时信息**: 提供状态栏/导航栏高度等系统信息
-- 🔄 **动态切换**: 支持运行时启用/禁用沉浸式模式
+- **现代化实现**: 基于 Android 15+ 官方推荐的 Edge-to-Edge 模式
+- **全面兼容**: 支持 API 21+ (Android 5.0+)
+- **简洁 API**: 链式调用，一行代码实现沉浸式
+- **灵活配置**: 支持状态栏、导航栏独立控制
+- **智能适配**: 自动处理深色/浅色状态栏文字
+- **实时信息**: 提供状态栏/导航栏高度等系统信息
+- **动态切换**: 支持运行时启用/禁用沉浸式模式
 
-## 📦 安装
+## 安装
 
 在模块的 `build.gradle.kts` 文件中添加依赖：
 
-> 📢 **最新版本**：请访问 [Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar) 获取最新版本号。
+> **最新版本**：请访问 [Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar) 获取最新版本号。
 
 ```kotlin
 dependencies {
@@ -31,7 +31,7 @@ dependencies {
 
 将 `x.x.x` 替换为最新版本号。
 
-## 🚀 快速开始
+## 快速开始
 
 ### 基础用法
 
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-## 📖 API 文档
+## API 文档
 
 ### 核心方法 - ImmersionBar.enable()
 
@@ -124,6 +124,44 @@ val hasNavigationBar = ImmersionBar.hasNavigationBar(context: Context)
 val hasNotch = ImmersionBar.hasNotch()
 ```
 
+### 独立 View Padding 控制 - applyInsetsPadding
+
+独立于 Activity 的沉浸式配置，为任意 View 单独应用 WindowInsets padding。
+
+#### 适用场景：全屏覆盖层 (Loading/Error View)
+
+当 Activity 启用沉浸式 (Edge-to-Edge) 后，内容会延伸到状态栏下方。如果页面上覆盖了一个全屏的 Loading 或 Error 页面，它的顶部内容（如标题栏）会被状态栏遮挡。
+
+此时，可以使用 `applyInsetsPadding` 为覆盖层的顶部 View 独立添加 padding，而不影响底层主页面的布局。
+
+```kotlin
+// 为 Loading View 的标题栏增加顶部 padding，避开状态栏
+ImmersionBar.applyInsetsPadding(
+    view = binding.tvStatusTitle,
+    paddingStatusBar = true
+)
+```
+
+#### 方法定义
+
+```kotlin
+ImmersionBar.applyInsetsPadding(
+    view: View,
+    paddingStatusBar: Boolean = false,    // 是否添加状态栏 padding
+    paddingNavigationBar: Boolean = false // 是否添加导航栏 padding
+)
+
+// 清除 padding，恢复 View 的原始 padding
+ImmersionBar.clearInsetsPadding(view: View)
+```
+
+#### 核心特性
+
+1.  **独立性**：可独立使用，无需 Activity 启用 ImmersionBar.enable()。
+2.  **自动清理**：自动监听 View 的 attach/detach 状态，View 移除时自动释放监听器，防止内存泄漏。
+3.  **原始 Padding 保护**：应用前会记录 View 的原始 padding，清除或 detach 时自动恢复，适合动态 View 或 RecyclerView Item 使用。
+
+
 ### Dialog 沉浸式
 
 #### 全屏 Dialog
@@ -158,7 +196,7 @@ ImmersionBar.setDialogStatusBarTextDark(
 )
 ```
 
-## 🎨 使用场景
+## 使用场景
 
 ### 1. 推荐配置 (Demo默认效果)
 
@@ -318,7 +356,7 @@ ImmersionBar.enableBottomSheetDialog(bottomSheet)
 bottomSheet.show()
 ```
 
-## 💡 最佳实践
+## 最佳实践
 
 ### 推荐配置组合
 
@@ -372,13 +410,13 @@ ImmersionBar.enable(
 
 
 
-## 📄 许可证
+## 许可证
 
 本项目采用 Apache License 2.0 许可证。详情请查看 [LICENSE](LICENSE) 文件。
 
 ---
 
-如果这个项目对您有帮助，请给个 ⭐️ Star 支持一下！
+如果这个项目对您有帮助，请给个 Star 支持一下！
 
 ---
 
