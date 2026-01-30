@@ -61,7 +61,6 @@ class CoordinatorDemoActivity : AppCompatActivity() {
         // 启用沉浸式
         ImmersionBar.enable(
             activity = this,
-            darkStatusBarText = true,
             showStatusBar = true,
             showNavigationBar = true,
             paddingNavigationBar = true
@@ -190,7 +189,6 @@ class CoordinatorDemoActivity : AppCompatActivity() {
         binding.switchShowStatus.setOnCheckedChangeListener { _, isChecked ->
             ImmersionBar.enable(
                 activity = this,
-                darkStatusBarText = isDarkStatusBarText,
                 showStatusBar = isChecked,
                 showNavigationBar = true
             )

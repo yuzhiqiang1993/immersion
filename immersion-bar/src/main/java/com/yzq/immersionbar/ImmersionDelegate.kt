@@ -2,7 +2,10 @@ package com.yzq.immersionbar
 
 import android.app.Activity
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -19,10 +22,8 @@ internal object ImmersionDelegate {
 
     /**
      * 启用沉浸式模式 (Edge-to-Edge)
-     *
-     * @param decorFitsSystemWindows 是否让内容延伸到系统栏下方（false=延伸/Edge-to-Edge，true=不延伸）
      */
-    fun enableEdgeToEdge(activity: Activity, decorFitsSystemWindows: Boolean = false) {
+    fun enableEdgeToEdge(activity: Activity) {
         val window = activity.window
 
         // 标记沉浸式已启用
@@ -56,20 +57,19 @@ internal object ImmersionDelegate {
     }
 
     /**
-     * 更新系统栏状态（显示/隐藏、深浅色）
-     * 注意：显示/隐藏和文字颜色始终生效，沉浸式相关配置只在启用时生效
+     * 更新系统栏状态（显示/隐藏）
+     * 注意：显示/隐藏始终生效，沉浸式相关配置只在启用时生效
      */
     fun updateSystemBars(
         activity: Activity,
         showStatusBar: Boolean,
-        showNavigationBar: Boolean,
-        darkStatusBarText: Boolean
+        showNavigationBar: Boolean
     ) {
         val window = activity.window
         val controller = WindowInsetsControllerCompat(window, window.decorView)
 
-        // 设置状态栏文字颜色（始终生效）
-        controller.isAppearanceLightStatusBars = darkStatusBarText
+        // 状态栏文字颜色自动根据页面背景亮度决定（仅状态栏可见时应用）
+        applyAutoStatusBarTextAppearance(activity, controller, showStatusBar)
 
         // 控制系统栏显示/隐藏（始终生效）
         when {
@@ -120,24 +120,78 @@ internal object ImmersionDelegate {
         controller.isAppearanceLightStatusBars = isDark
     }
 
+    private fun applyAutoStatusBarTextAppearance(
+        activity: Activity,
+        controller: WindowInsetsControllerCompat,
+        showStatusBar: Boolean
+    ) {
+        if (!showStatusBar) {
+            return
+        }
+        val statusBarBgColor = resolveStatusBarBackgroundColor(activity)
+        controller.isAppearanceLightStatusBars = isLightColor(statusBarBgColor)
+    }
+
+    private fun resolveStatusBarBackgroundColor(activity: Activity): Int {
+        val rawStatusBarColor = activity.window.statusBarColor
+        if (!InsetsDelegate.isImmersionEnabled(activity) && Color.alpha(rawStatusBarColor) > 0) {
+            return normalizeColorForBrightness(rawStatusBarColor)
+        }
+
+        val contentRoot = (activity.findViewById<View>(android.R.id.content) as? ViewGroup)?.getChildAt(0)
+        return extractBackgroundColor(contentRoot)
+            ?: extractBackgroundColor(activity.window.decorView)
+            ?: Color.WHITE
+    }
+
+    private fun extractBackgroundColor(view: View?): Int? {
+        val colorDrawable = view?.background as? ColorDrawable ?: return null
+        return normalizeColorForBrightness(colorDrawable.color)
+    }
+
+    private fun normalizeColorForBrightness(color: Int): Int {
+        val alpha = Color.alpha(color)
+        if (alpha >= 255) {
+            return color
+        }
+        // Blend translucent colors onto white to approximate perceived brightness.
+        val red = (Color.red(color) * alpha + 255 * (255 - alpha)) / 255
+        val green = (Color.green(color) * alpha + 255 * (255 - alpha)) / 255
+        val blue = (Color.blue(color) * alpha + 255 * (255 - alpha)) / 255
+        return Color.rgb(red, green, blue)
+    }
+
+    private fun isLightColor(color: Int): Boolean {
+        val red = Color.red(color)
+        val green = Color.green(color)
+        val blue = Color.blue(color)
+        val brightness = (red * 299 + green * 587 + blue * 114) / 1000
+        return brightness > 128
+    }
+
     /**
      * 禁用沉浸式模式，恢复到默认状态
      */
     fun disableEdgeToEdge(activity: Activity) {
         val window = activity.window
 
-        // 标记沉浸式已禁用
-        InsetsDelegate.setImmersionEnabled(activity, false)
-
         // 清除之前设置的 insets 监听器和 padding
         InsetsDelegate.clearInsets(activity)
-
-        // 确保显示出状态栏
-        updateSystemBars(activity, true, true, true)
 
         // 恢复默认状态：内容不延伸到系统栏
         WindowCompat.setDecorFitsSystemWindows(window, true)
 
-        InsetsDelegate.restoreOriginalNavigationBarColor(activity)
+        // 恢复进入沉浸式前的系统栏样式快照
+        InsetsDelegate.restoreOriginalSystemBarStyle(activity)
+
+        // 标记沉浸式已禁用
+        InsetsDelegate.setImmersionEnabled(activity, false)
+
+        // 重新应用自动状态栏文字颜色，避免恢复快照后与当前背景对比不足
+        updateSystemBars(
+            activity = activity,
+            showStatusBar = true,
+            showNavigationBar = true
+        )
     }
 }

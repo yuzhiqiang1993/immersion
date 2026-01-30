@@ -37,8 +37,7 @@ class ViewPaddingDemoActivity : AppCompatActivity() {
         ImmersionBar.enable(
             activity = this,
             paddingStatusBar = false,
-            paddingNavigationBar = false,
-            darkStatusBarText = false
+            paddingNavigationBar = false
         )
 
         // 2. 模拟主页面的一些 padding (防止主内容被遮挡)
