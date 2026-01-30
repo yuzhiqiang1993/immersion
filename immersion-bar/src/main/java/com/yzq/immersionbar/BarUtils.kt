@@ -7,11 +7,14 @@ import android.view.ViewConfiguration
 
 
 /**
- * @description: 一些工具类
+ * @description: 系统栏相关工具类
  * @author : yuzhiqiang
  */
 
 internal object BarUtils {
+
+    private const val DEFAULT_STATUS_BAR_HEIGHT_DP = 24
+    private const val DEFAULT_NAVIGATION_BAR_HEIGHT_DP = 48
 
     /**
      * 获取状态栏高度
@@ -21,9 +24,8 @@ internal object BarUtils {
         return if (resourceId > 0) {
             context.resources.getDimensionPixelSize(resourceId)
         } else {
-            // 默认值 24dp
             val density = context.resources.displayMetrics.density
-            (24 * density + 0.5f).toInt()
+            (DEFAULT_STATUS_BAR_HEIGHT_DP * density + 0.5f).toInt()
         }
     }
 
@@ -36,9 +38,8 @@ internal object BarUtils {
         return if (resourceId > 0) {
             context.resources.getDimensionPixelSize(resourceId)
         } else {
-            // 默认值 48dp
             val density = context.resources.displayMetrics.density
-            (48 * density + 0.5f).toInt()
+            (DEFAULT_NAVIGATION_BAR_HEIGHT_DP * density + 0.5f).toInt()
         }
     }
 

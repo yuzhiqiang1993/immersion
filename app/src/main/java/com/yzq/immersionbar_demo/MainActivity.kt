@@ -110,6 +110,11 @@ class MainActivity : AppCompatActivity() {
         binding.btnBottomSheet.setOnClickListener {
             showBottomSheetDialog()
         }
+
+        // View Padding 演示跳转
+        binding.btnViewPadding.setOnClickListener {
+            startActivity(Intent(this, ViewPaddingDemoActivity::class.java))
+        }
     }
 
     private fun showFullScreenDialog() {

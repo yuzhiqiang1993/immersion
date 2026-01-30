@@ -216,6 +216,17 @@
 
             </LinearLayout>
 
+            <!-- View Padding 演示按钮 -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_view_padding"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="24dp"
+                android:text="View Padding"
+                android:textSize="13sp"
+                app:cornerRadius="28dp" />
+
 
             <TextView
                 android:id="@+id/tv_info"

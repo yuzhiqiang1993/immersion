@@ -3,6 +3,7 @@ package com.yzq.immersionbar
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.view.View
 
 
 /**
@@ -157,5 +158,34 @@ object ImmersionBar {
      */
     fun setDialogStatusBarTextDark(dialog: Dialog, isDark: Boolean = true) {
         DialogImmersionDelegate.setStatusBarTextDark(dialog, isDark)
+    }
+
+    /**
+     * 为指定 View 应用系统栏 padding
+     *
+     * View detach 时自动清理，无需手动调用 clearInsetsPadding。
+     * 此方法独立于 enable() / disable()，可单独使用。
+     *
+     * @param view 目标 View
+     * @param paddingStatusBar 是否添加顶部 padding 避开状态栏
+     * @param paddingNavigationBar 是否添加底部 padding 避开导航栏
+     */
+    fun applyInsetsPadding(
+        view: View,
+        paddingStatusBar: Boolean = true,
+        paddingNavigationBar: Boolean = true
+    ) {
+        InsetsDelegate.applyViewInsetsPadding(view, paddingStatusBar, paddingNavigationBar)
+    }
+
+    /**
+     * 清除指定 View 的系统栏 padding
+     *
+     * 通常无需手动调用，View detach 时会自动清理。
+     *
+     * @param view 目标 View
+     */
+    fun clearInsetsPadding(view: View) {
+        InsetsDelegate.clearViewInsetsPadding(view)
     }
 }

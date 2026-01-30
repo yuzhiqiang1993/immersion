@@ -7,27 +7,17 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isNotEmpty
+import com.yzq.immersionbar.data.ActivityState
+import com.yzq.immersionbar.data.PaddingInfo
+import com.yzq.immersionbar.data.ViewPaddingState
 
 /**
  * WindowInsets 处理委托
  */
 internal object InsetsDelegate {
 
-    private data class ActivityState(
-        val originalNavigationBarColor: Int,
-        val immersionEnabled: Boolean = false,
-        val paddingInfo: PaddingInfo? = null
-    )
-
-    private data class PaddingInfo(
-        val view: View,
-        val originalTop: Int,
-        val originalBottom: Int,
-        val consumeTop: Boolean,
-        val consumeBottom: Boolean
-    )
-
     private val stateMap = mutableMapOf<Activity, ActivityState>()
+    private val viewPaddingMap = mutableMapOf<View, ViewPaddingState>()
     private var registeredApp: Application? = null
 
     private val lifecycleCallbacks = object : ActivityLifecycleCallbacksAdapter() {
@@ -99,6 +89,94 @@ internal object InsetsDelegate {
         )
         updateState(activity) { state ->
             state.copy(paddingInfo = null)
+        }
+    }
+
+    /**
+     * 为指定 View 应用 WindowInsets padding（独立于 Activity 的沉浸式设置）
+     *
+     * View detach 时自动清理，无需手动调用 clearViewInsetsPadding。
+     */
+    fun applyViewInsetsPadding(view: View, consumeTop: Boolean, consumeBottom: Boolean) {
+        val existingState = viewPaddingMap[view]
+
+        if (existingState != null) {
+            val updatedState = existingState.copy(consumeTop = consumeTop, consumeBottom = consumeBottom)
+            viewPaddingMap[view] = updatedState
+        } else {
+            val detachListener = createDetachListener(view)
+            val newState = ViewPaddingState(
+                originalTop = view.paddingTop,
+                originalBottom = view.paddingBottom,
+                consumeTop = consumeTop,
+                consumeBottom = consumeBottom,
+                detachListener = detachListener
+            )
+            viewPaddingMap[view] = newState
+            view.addOnAttachStateChangeListener(detachListener)
+        }
+
+        setupViewWindowInsetsListener(view)
+        ViewCompat.requestApplyInsets(view)
+    }
+
+    /**
+     * 清除指定 View 的 WindowInsets padding
+     *
+     * 通常无需手动调用，View detach 时会自动清理。
+     */
+    fun clearViewInsetsPadding(view: View) {
+        val state = viewPaddingMap.remove(view) ?: return
+        view.removeOnAttachStateChangeListener(state.detachListener)
+        ViewCompat.setOnApplyWindowInsetsListener(view, null)
+        view.setPadding(
+            view.paddingLeft,
+            state.originalTop,
+            view.paddingRight,
+            state.originalBottom
+        )
+    }
+
+    private fun createDetachListener(view: View): View.OnAttachStateChangeListener {
+        return object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(attachedView: View) {}
+
+            override fun onViewDetachedFromWindow(detachedView: View) {
+                clearViewInsetsPadding(detachedView)
+            }
+        }
+    }
+
+    private fun setupViewWindowInsetsListener(view: View) {
+        ViewCompat.setOnApplyWindowInsetsListener(view) { targetView, insets ->
+            val state = viewPaddingMap[targetView]
+            if (state == null) {
+                return@setOnApplyWindowInsetsListener insets
+            }
+
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val topPadding = if (state.consumeTop) {
+                systemBars.top
+            } else {
+                0
+            }
+            val bottomPadding = if (state.consumeBottom) {
+                systemBars.bottom
+            } else {
+                0
+            }
+            val newTop = state.originalTop + topPadding
+            val newBottom = state.originalBottom + bottomPadding
+
+            if (targetView.paddingTop != newTop || targetView.paddingBottom != newBottom) {
+                targetView.setPadding(
+                    targetView.paddingLeft,
+                    newTop,
+                    targetView.paddingRight,
+                    newBottom
+                )
+            }
+            insets
         }
     }
 

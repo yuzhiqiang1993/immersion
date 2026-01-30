@@ -36,6 +36,11 @@
             android:name=".CoordinatorDemoActivity"
             android:exported="false"
             android:label="CoordinatorLayout 演示" />
+
+        <activity
+            android:name=".ViewPaddingDemoActivity"
+            android:exported="false"
+            android:label="View Padding 演示" />
     </application>
 
 </manifest>

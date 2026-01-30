@@ -101,14 +101,24 @@ internal object DialogImmersionDelegate {
         val originalTop = targetView.paddingTop
         val originalBottom = targetView.paddingBottom
 
-        ViewCompat.setOnApplyWindowInsetsListener(targetView) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(targetView) { targetViewInListener, insets ->
             val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
-            val newTop = originalTop + if (paddingStatusBar) systemBarsInsets.top else 0
-            val newBottom = originalBottom + if (paddingNavigationBar) systemBarsInsets.bottom else 0
+            val topPadding = if (paddingStatusBar) {
+                systemBarsInsets.top
+            } else {
+                0
+            }
+            val bottomPadding = if (paddingNavigationBar) {
+                systemBarsInsets.bottom
+            } else {
+                0
+            }
+            val newTop = originalTop + topPadding
+            val newBottom = originalBottom + bottomPadding
 
-            if (v.paddingTop != newTop || v.paddingBottom != newBottom) {
-                v.setPadding(v.paddingLeft, newTop, v.paddingRight, newBottom)
+            if (targetViewInListener.paddingTop != newTop || targetViewInListener.paddingBottom != newBottom) {
+                targetViewInListener.setPadding(targetViewInListener.paddingLeft, newTop, targetViewInListener.paddingRight, newBottom)
             }
 
             insets
