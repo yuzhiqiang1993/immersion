@@ -12,7 +12,7 @@ mavenPublishing {
 }
 
 android {
-    namespace = "com.yzq.immersionbar"
+    namespace = "com.yzq.immersion"
 
     buildFeatures {
         viewBinding = true
@@ -25,4 +25,3 @@ dependencies {
     implementation(libs.androidx.activity.stable)
     implementation(libs.androidx.activity.ktx.stable)
 }
-

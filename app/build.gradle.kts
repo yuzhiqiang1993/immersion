@@ -34,5 +34,5 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.cardview)
-    implementation(project(":immersion-bar"))
+    implementation(project(":immersion"))
 }

@@ -101,6 +101,26 @@
                         android:textSize="16sp" />
 
                     <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switch_margin_status_bar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:checked="false"
+                        android:text="状态栏 Margin"
+                        android:textColor="#212121"
+                        android:textSize="16sp" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switch_margin_nav_bar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:checked="false"
+                        android:text="导航栏 Margin"
+                        android:textColor="#212121"
+                        android:textSize="16sp" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switch_enable_immersion"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
