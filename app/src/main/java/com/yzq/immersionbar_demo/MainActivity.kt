@@ -5,12 +5,17 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.yzq.immersionbar.ImmersionBar
+import com.yzq.immersion.applySystemBarsMargin
+import com.yzq.immersion.applySystemBarsPadding
+import com.yzq.immersion.setupBottomSheetImmersion
+import com.yzq.immersion.setupImmersion
 import com.yzq.immersionbar_demo.databinding.ActivityMainBinding
 import java.util.Random
 
@@ -18,118 +23,126 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
+    private var lastStatusBarHeight = 0
+    private var lastNavBarHeight = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        updateImmersionBar()
+        // 新架构默认就是沉浸式，无需开关
+        binding.switchEnableImmersion.visibility = View.GONE
+
+        // 初始化沉浸式（库 API）
+        updateImmersion()
+        // 初始化 Padding/Margin（库 API）
+        applyPaddingWithLibraryApi()
+        applyMarginWithLibraryApi()
+        // 用于获取系统栏高度并显示信息
+        setupInfoListener()
+
         initListeners()
-        updatePaddingSwitchesState()
-        updateInfo()
+    }
+
+    /**
+     * 使用库 API：applySystemBarsPadding 控制 View Padding 避让。
+     * 库内部通过 View Tag 防叠加，可安全多次调用。
+     */
+    private fun applyPaddingWithLibraryApi() {
+        val scrollView = binding.contentContainer.parent as View
+        scrollView.applySystemBarsPadding(
+            addStatusBar = binding.switchPaddingStatusBar.isChecked,
+            addNavigationBar = binding.switchPaddingNavBar.isChecked
+        )
+    }
+
+    /**
+     * 使用库 API：applySystemBarsMargin 控制 View Margin 避让。
+     * 库内部通过 View Tag 防叠加，可安全多次调用。
+     */
+    private fun applyMarginWithLibraryApi() {
+        val scrollView = binding.contentContainer.parent as View
+        scrollView.applySystemBarsMargin(
+            addStatusBar = binding.switchMarginStatusBar.isChecked,
+            addNavigationBar = binding.switchMarginNavBar.isChecked
+        )
+    }
+
+    /**
+     * 在 rootView 上监听 insets 获取系统栏高度用于信息展示。
+     */
+    private fun setupInfoListener() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.rootView) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            lastStatusBarHeight = systemBars.top
+            lastNavBarHeight = systemBars.bottom
+            updateInfoText()
+            insets
+        }
     }
 
     private fun initListeners() {
-        // 沉浸式开关
-        binding.switchEnableImmersion.setOnCheckedChangeListener { _, isChecked ->
-            // 沉浸式关闭时，禁用并关闭 padding 开关
-            if (!isChecked) {
-                binding.switchPaddingStatusBar.isChecked = false
-                binding.switchPaddingNavBar.isChecked = false
-            }
-            updatePaddingSwitchesState()
-            updateImmersionBar()
+        // 状态栏显示/隐藏
+        binding.switchShowStatusBar.setOnCheckedChangeListener { _, _ -> updateImmersion() }
+
+        // 导航栏显示/隐藏
+        binding.switchShowNavBar.setOnCheckedChangeListener { _, _ -> updateImmersion() }
+
+        // 状态栏文字颜色
+        binding.switchDarkStatusText.setOnCheckedChangeListener { _, _ -> updateImmersion() }
+
+        // Padding 开关
+        val paddingChangeListener = CompoundButton.OnCheckedChangeListener { _, _ ->
+            applyPaddingWithLibraryApi()
         }
+        binding.switchPaddingStatusBar.setOnCheckedChangeListener(paddingChangeListener)
+        binding.switchPaddingNavBar.setOnCheckedChangeListener(paddingChangeListener)
 
-        // 状态栏开关
-        binding.switchShowStatusBar.setOnCheckedChangeListener { _, _ ->
-            updateImmersionBar()
+        // Margin 开关
+        val marginChangeListener = CompoundButton.OnCheckedChangeListener { _, _ ->
+            applyMarginWithLibraryApi()
         }
-
-        // 导航栏开关
-        binding.switchShowNavBar.setOnCheckedChangeListener { _, _ ->
-            updateImmersionBar()
-        }
-
-        // 状态栏文字颜色开关
-        binding.switchDarkStatusText.setOnCheckedChangeListener { _, _ ->
-            updateImmersionBar()
-        }
-
-        // 状态栏 padding 开关
-        binding.switchPaddingStatusBar.setOnCheckedChangeListener { _, _ ->
-            updateImmersionBar()
-        }
-
-        // 导航栏 padding 开关
-        binding.switchPaddingNavBar.setOnCheckedChangeListener { _, _ ->
-            updateImmersionBar()
-        }
-
-
+        binding.switchMarginStatusBar.setOnCheckedChangeListener(marginChangeListener)
+        binding.switchMarginNavBar.setOnCheckedChangeListener(marginChangeListener)
 
         // 随机背景颜色
         binding.btnChangeColor.setOnClickListener {
             val randomColor = randomColor()
             binding.rootView.setBackgroundColor(randomColor)
 
-            // 自动调整文字颜色以保持对比度
             val isLightBg = ColorUtils.calculateLuminance(randomColor) > 0.5
             binding.switchDarkStatusText.isChecked = isLightBg
-
             updateUIColors(isLightBg)
-            updateImmersionBar()
+            updateImmersion()
         }
 
-        // Fragment 演示跳转
-        binding.btnFragment.setOnClickListener {
-            startActivity(Intent(this, FragmentDemoActivity::class.java))
-        }
+        // 各演示页面跳转
 
-        // ViewPager 演示跳转
         binding.btnViewPager.setOnClickListener {
             startActivity(Intent(this, ViewPagerDemoActivity::class.java))
         }
 
-        // DrawerLayout 演示跳转
         binding.btnDrawer.setOnClickListener {
             startActivity(Intent(this, DrawerDemoActivity::class.java))
         }
-
-        // CoordinatorLayout 演示跳转
         binding.btnCoordinator.setOnClickListener {
             startActivity(Intent(this, CoordinatorDemoActivity::class.java))
         }
-
-        // Full Screen Dialog 演示
-        binding.btnFullScreenDialog.setOnClickListener {
-            showFullScreenDialog()
-        }
-
-        // Bottom Sheet Dialog 演示
-        binding.btnBottomSheet.setOnClickListener {
-            showBottomSheetDialog()
-        }
-
-        // View Padding 演示跳转
+        binding.btnFullScreenDialog.setOnClickListener { showFullScreenDialog() }
+        binding.btnBottomSheet.setOnClickListener { showBottomSheetDialog() }
         binding.btnViewPadding.setOnClickListener {
             startActivity(Intent(this, ViewPaddingDemoActivity::class.java))
         }
     }
 
     private fun showFullScreenDialog() {
-        // 使用 Theme.Translucent.NoTitleBar.Fullscreen 确保 Dialog 本身是全屏的
         val dialog = Dialog(this, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen)
         dialog.setContentView(R.layout.dialog_full_screen)
-        
-        // 设置关闭按钮
-        dialog.findViewById<android.view.View>(R.id.btnClose).setOnClickListener {
-            dialog.dismiss()
-        }
+        dialog.findViewById<View>(R.id.btnClose).setOnClickListener { dialog.dismiss() }
 
-        // 启用沉浸式
-        ImmersionBar.enableFullScreenDialog(dialog)
-        
+        // 使用库 API：Dialog 扩展
+        dialog.setupImmersion()
         dialog.show()
     }
 
@@ -137,82 +150,44 @@ class MainActivity : AppCompatActivity() {
         val bottomSheet = BottomSheetDialog(this)
         bottomSheet.setContentView(R.layout.dialog_bottom_sheet)
 
-        // 启用沉浸式
-        ImmersionBar.enableBottomSheetDialog(bottomSheet)
-
+        // 使用库 API：BottomSheet 扩展
+        bottomSheet.setupBottomSheetImmersion()
         bottomSheet.show()
     }
 
-
-
-    private fun updateImmersionBar() {
-        val enableImmersion = binding.switchEnableImmersion.isChecked
-
-        if (enableImmersion) {
-            // 启用沉浸式模式
-            ImmersionBar.enable(
-                activity = this,
-                paddingStatusBar = binding.switchPaddingStatusBar.isChecked,
-                paddingNavigationBar = binding.switchPaddingNavBar.isChecked,
-                showStatusBar = binding.switchShowStatusBar.isChecked,
-                showNavigationBar = binding.switchShowNavBar.isChecked
-            )
-        } else {
-            // 禁用沉浸式模式，恢复默认状态
-            ImmersionBar.disable(this)
-            // 禁用沉浸式后，仍需要更新系统栏显示/隐藏状态
-            ImmersionBar.updateSystemBars(
-                activity = this,
-                showStatusBar = binding.switchShowStatusBar.isChecked,
-                showNavigationBar = binding.switchShowNavBar.isChecked
-            )
-        }
-
-        updateInfo()
-    }
-
-    private fun updateInfo() {
-        binding.root.post {
-            val insets = ViewCompat.getRootWindowInsets(binding.root)
-            val sb = StringBuilder()
-            sb.append("系统信息:\n")
-            sb.append("• Android 版本: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})\n")
-
-            if (insets != null) {
-                val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-                val navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-                sb.append("• 状态栏高度: ${statusBar.top}px\n")
-                sb.append("• 导航栏高度: ${navBar.bottom}px\n")
-            }
-
-            sb.append("\n当前配置:\n")
-            sb.append("• 沉浸式: ${if (binding.switchEnableImmersion.isChecked) "开启" else "关闭"}\n")
-            sb.append("• 状态栏: ${if (binding.switchShowStatusBar.isChecked) "显示" else "隐藏"}\n")
-            sb.append("• 导航栏: ${if (binding.switchShowNavBar.isChecked) "显示" else "隐藏"}\n")
-            sb.append("• 文字颜色: ${if (binding.switchDarkStatusText.isChecked) "深色" else "浅色"}\n")
-            sb.append("• 状态栏 Padding: ${if (binding.switchPaddingStatusBar.isChecked) "开启" else "关闭"}\n")
-            sb.append("• 导航栏 Padding: ${if (binding.switchPaddingNavBar.isChecked) "开启" else "关闭"}\n")
-
-
-            binding.tvInfo.text = sb.toString()
-        }
-    }
-
     /**
-     * 更新 padding 开关的启用/禁用状态
-     * 只有沉浸式开启时，padding 开关才可用
+     * 使用库 API：Activity 扩展
      */
-    private fun updatePaddingSwitchesState() {
-        val enableImmersion = binding.switchEnableImmersion.isChecked
-        binding.switchPaddingStatusBar.isEnabled = enableImmersion
-        binding.switchPaddingNavBar.isEnabled = enableImmersion
+    private fun updateImmersion() {
+        setupImmersion(
+            showStatusBar = binding.switchShowStatusBar.isChecked,
+            showNavigationBar = binding.switchShowNavBar.isChecked,
+            isStatusBarDark = binding.switchDarkStatusText.isChecked
+        )
+    }
+
+    private fun updateInfoText() {
+        val sb = StringBuilder()
+        sb.append("系统信息:\n")
+        sb.append("• Android 版本: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})\n")
+        sb.append("• 状态栏高度: ${lastStatusBarHeight}px\n")
+        sb.append("• 导航栏高度: ${lastNavBarHeight}px\n")
+
+        sb.append("\n当前配置:\n")
+        sb.append("• 状态栏: ${if (binding.switchShowStatusBar.isChecked) "显示" else "隐藏"}\n")
+        sb.append("• 导航栏: ${if (binding.switchShowNavBar.isChecked) "显示" else "隐藏"}\n")
+        sb.append("• 文字颜色: ${if (binding.switchDarkStatusText.isChecked) "深色" else "浅色"}\n")
+        sb.append("• 状态栏 Padding: ${if (binding.switchPaddingStatusBar.isChecked) "开启" else "关闭"}\n")
+        sb.append("• 导航栏 Padding: ${if (binding.switchPaddingNavBar.isChecked) "开启" else "关闭"}\n")
+        sb.append("• 状态栏 Margin: ${if (binding.switchMarginStatusBar.isChecked) "开启" else "关闭"}\n")
+        sb.append("• 导航栏 Margin: ${if (binding.switchMarginNavBar.isChecked) "开启" else "关闭"}\n")
+
+        binding.tvInfo.text = sb.toString()
     }
 
     private fun updateUIColors(isLightBg: Boolean) {
         val textColor = if (isLightBg) Color.parseColor("#212121") else Color.WHITE
         val cardBgColor =
-            if (isLightBg) Color.parseColor("#F5F5F5") else Color.parseColor("#424242")
-        val infoBgColor =
             if (isLightBg) Color.parseColor("#F5F5F5") else Color.parseColor("#424242")
         val infoTextColor =
             if (isLightBg) Color.parseColor("#616161") else Color.parseColor("#BDBDBD")
@@ -223,10 +198,11 @@ class MainActivity : AppCompatActivity() {
         binding.switchDarkStatusText.setTextColor(textColor)
         binding.switchPaddingStatusBar.setTextColor(textColor)
         binding.switchPaddingNavBar.setTextColor(textColor)
+        binding.switchMarginStatusBar.setTextColor(textColor)
+        binding.switchMarginNavBar.setTextColor(textColor)
 
         binding.cardSettings.setCardBackgroundColor(cardBgColor)
-
-        binding.tvInfo.setBackgroundColor(infoBgColor)
+        binding.tvInfo.setBackgroundColor(cardBgColor)
         binding.tvInfo.setTextColor(infoTextColor)
     }
 

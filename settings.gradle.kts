@@ -17,6 +17,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "immersionbar"
+rootProject.name = "immersion"
 include(":app")
-include(":immersion-bar")
+include(":immersion")
