@@ -15,10 +15,10 @@ import androidx.core.view.WindowInsetsCompat
  */
 
 // Tag Key：用于在 View 上持久化原始 Padding/Margin
-private val TAG_ORIGINAL_PADDING_TOP = "immersion_original_padding_top".hashCode()
-private val TAG_ORIGINAL_PADDING_BOTTOM = "immersion_original_padding_bottom".hashCode()
-private val TAG_ORIGINAL_MARGIN_TOP = "immersion_original_margin_top".hashCode()
-private val TAG_ORIGINAL_MARGIN_BOTTOM = "immersion_original_margin_bottom".hashCode()
+private val TAG_ORIGINAL_PADDING_TOP = R.id.immersion_original_padding_top
+private val TAG_ORIGINAL_PADDING_BOTTOM = R.id.immersion_original_padding_bottom
+private val TAG_ORIGINAL_MARGIN_TOP = R.id.immersion_original_margin_top
+private val TAG_ORIGINAL_MARGIN_BOTTOM = R.id.immersion_original_margin_bottom
 
 /**
  * 安全地获取或初始化 View 的原始 PaddingTop。
