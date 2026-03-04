@@ -8,23 +8,22 @@ import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.yzq.immersion.applySystemBarsMargin
 import com.yzq.immersion.applySystemBarsPadding
+import com.yzq.immersion.navigationBarHeight
 import com.yzq.immersion.setupBottomSheetImmersion
 import com.yzq.immersion.setupImmersion
+import com.yzq.immersion.statusBarHeight
+import com.yzq.immersion.isLightColor
 import com.yzq.immersionbar_demo.databinding.ActivityMainBinding
 import java.util.Random
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-
-    private var lastStatusBarHeight = 0
-    private var lastNavBarHeight = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,10 +38,9 @@ class MainActivity : AppCompatActivity() {
         // 初始化 Padding/Margin（库 API）
         applyPaddingWithLibraryApi()
         applyMarginWithLibraryApi()
-        // 用于获取系统栏高度并显示信息
-        setupInfoListener()
 
         initListeners()
+        updateInfoText()
     }
 
     /**
@@ -55,6 +53,7 @@ class MainActivity : AppCompatActivity() {
             addStatusBar = binding.switchPaddingStatusBar.isChecked,
             addNavigationBar = binding.switchPaddingNavBar.isChecked
         )
+        updateInfoText()
     }
 
     /**
@@ -67,19 +66,7 @@ class MainActivity : AppCompatActivity() {
             addStatusBar = binding.switchMarginStatusBar.isChecked,
             addNavigationBar = binding.switchMarginNavBar.isChecked
         )
-    }
-
-    /**
-     * 在 rootView 上监听 insets 获取系统栏高度用于信息展示。
-     */
-    private fun setupInfoListener() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.rootView) { _, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            lastStatusBarHeight = systemBars.top
-            lastNavBarHeight = systemBars.bottom
-            updateInfoText()
-            insets
-        }
+        updateInfoText()
     }
 
     private fun initListeners() {
@@ -111,7 +98,7 @@ class MainActivity : AppCompatActivity() {
             val randomColor = randomColor()
             binding.rootView.setBackgroundColor(randomColor)
 
-            val isLightBg = ColorUtils.calculateLuminance(randomColor) > 0.5
+            val isLightBg = randomColor.isLightColor()
             binding.switchDarkStatusText.isChecked = isLightBg
             updateUIColors(isLightBg)
             updateImmersion()
@@ -164,25 +151,28 @@ class MainActivity : AppCompatActivity() {
             showNavigationBar = binding.switchShowNavBar.isChecked,
             isStatusBarDark = binding.switchDarkStatusText.isChecked
         )
+        updateInfoText()
     }
 
     private fun updateInfoText() {
-        val sb = StringBuilder()
-        sb.append("系统信息:\n")
-        sb.append("• Android 版本: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})\n")
-        sb.append("• 状态栏高度: ${lastStatusBarHeight}px\n")
-        sb.append("• 导航栏高度: ${lastNavBarHeight}px\n")
+        binding.rootView.post {
+            val sb = StringBuilder()
+            sb.append("系统信息:\n")
+            sb.append("• Android 版本: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})\n")
+            sb.append("• 状态栏高度: ${binding.rootView.statusBarHeight}px\n")
+            sb.append("• 导航栏高度: ${binding.rootView.navigationBarHeight}px\n")
 
-        sb.append("\n当前配置:\n")
-        sb.append("• 状态栏: ${if (binding.switchShowStatusBar.isChecked) "显示" else "隐藏"}\n")
-        sb.append("• 导航栏: ${if (binding.switchShowNavBar.isChecked) "显示" else "隐藏"}\n")
-        sb.append("• 文字颜色: ${if (binding.switchDarkStatusText.isChecked) "深色" else "浅色"}\n")
-        sb.append("• 状态栏 Padding: ${if (binding.switchPaddingStatusBar.isChecked) "开启" else "关闭"}\n")
-        sb.append("• 导航栏 Padding: ${if (binding.switchPaddingNavBar.isChecked) "开启" else "关闭"}\n")
-        sb.append("• 状态栏 Margin: ${if (binding.switchMarginStatusBar.isChecked) "开启" else "关闭"}\n")
-        sb.append("• 导航栏 Margin: ${if (binding.switchMarginNavBar.isChecked) "开启" else "关闭"}\n")
+            sb.append("\n当前配置:\n")
+            sb.append("• 状态栏: ${if (binding.switchShowStatusBar.isChecked) "显示" else "隐藏"}\n")
+            sb.append("• 导航栏: ${if (binding.switchShowNavBar.isChecked) "显示" else "隐藏"}\n")
+            sb.append("• 文字颜色: ${if (binding.switchDarkStatusText.isChecked) "深色" else "浅色"}\n")
+            sb.append("• 状态栏 Padding: ${if (binding.switchPaddingStatusBar.isChecked) "开启" else "关闭"}\n")
+            sb.append("• 导航栏 Padding: ${if (binding.switchPaddingNavBar.isChecked) "开启" else "关闭"}\n")
+            sb.append("• 状态栏 Margin: ${if (binding.switchMarginStatusBar.isChecked) "开启" else "关闭"}\n")
+            sb.append("• 导航栏 Margin: ${if (binding.switchMarginNavBar.isChecked) "开启" else "关闭"}\n")
 
-        binding.tvInfo.text = sb.toString()
+            binding.tvInfo.text = sb.toString()
+        }
     }
 
     private fun updateUIColors(isLightBg: Boolean) {

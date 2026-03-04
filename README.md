@@ -11,11 +11,10 @@
 
 - **现代化实现**: 基于 Android 15+ 官方推荐的 Edge-to-Edge 模式
 - **全面兼容**: 支持 API 21+ (Android 5.0+)
-- **简洁 API**: 一行代码实现沉浸式
-- **灵活配置**: 支持状态栏、导航栏独立控制
-- **智能适配**: 自动处理深色/浅色状态栏文字
-- **实时信息**: 提供状态栏/导航栏高度等系统信息
-- **动态切换**: 支持运行时启用/禁用沉浸式模式
+- **灵活配置**: 支持状态栏、导航栏精细化独立避让（Padding & Margin两套方案）
+- **智能设色**: 根据背景色（基于 CIEXYZ 亮度模型）自动匹配状态栏深浅文字
+- **开发利器**: 丰富的 Kotlin 扩展（高度获取、颜色亮度判断、变暗等）
+- **动态更新**: 支持实时刷新显示状态，安全多次调用不起冲突
 
 ## 安装
 
@@ -41,25 +40,25 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 启用沉浸式模式（默认：导航栏自动 padding，状态栏透明）
-        ImmersionBar.enable(this)
+        // 启用沉浸式模式，只需调用此简单扩展方法
+        setupImmersion()
     }
 }
 ```
 
 ## API 文档
 
-### 核心方法 - ImmersionBar.enable()
+### 核心方法 - Activity.setupImmersion()
 
-启用沉浸式模式的主要方法，一行代码即可完成所有沉浸式设置。
+为 Activity 的 Window 开启 Edge-to-Edge，并一次性完成包括显示策略、刘海屏适配、底座深浅色判断等沉浸式设置。
 
 ```kotlin
-ImmersionBar.enable(
-    activity: Activity,                    // 必需 - 目标 Activity 实例
-    paddingStatusBar: Boolean = false,      // 可选 - 是否添加状态栏 padding
-    paddingNavigationBar: Boolean = true,    // 可选 - 是否添加导航栏 padding
+// 默认为：系统栏全开，文字颜色根据背景色智能推断
+setupImmersion(
     showStatusBar: Boolean = true,         // 可选 - 是否显示状态栏
-    showNavigationBar: Boolean = true      // 可选 - 是否显示导航栏
+    showNavigationBar: Boolean = true,     // 可选 - 是否显示导航栏
+    isStatusBarDark: Boolean? = null,      // 可选 - 状态栏文字图标深浅色。null表示根据背景自动计算
+    isNavigationBarDark: Boolean? = null   // 可选 - 导航栏文字图标深浅色。null表示跟随自动计算
 )
 ```
 
@@ -67,139 +66,132 @@ ImmersionBar.enable(
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| **activity** | `Activity` | 必需 | 需要设置沉浸式的 Activity 实例。通常传入 `this` |
-| **paddingStatusBar** | `Boolean` | `false` | 是否为状态栏添加顶部 padding。<br>• **false**：内容蔓延到状态栏（默认）<br>• **true**：添加 padding 避开状态栏 |
-| **paddingNavigationBar** | `Boolean` | `true` | 是否为导航栏添加底部 padding。<br>• **true**：添加 padding 避开导航栏（推荐，默认）<br>• **false**：内容蔓延到导航栏 |
-| **showStatusBar** | `Boolean` | `true` | 是否显示状态栏。<br>• **true**：显示状态栏<br>• **false**：隐藏状态栏<br>• **隐藏时**：可通过下滑手势临时唤出 |
-| **showNavigationBar** | `Boolean` | `true` | 是否显示导航栏。<br>• **true**：显示导航栏<br>• **false**：隐藏导航栏<br>• **隐藏时**：可通过上滑手势临时唤出 |
+| **showStatusBar** | `Boolean` | `true` | 是否可见状态栏。<br>• **false**：隐藏状态栏（可通过下滑手势临时唤出） |
+| **showNavigationBar** | `Boolean` | `true` | 是否可见导航栏。<br>• **false**：隐藏导航栏（可通过上滑手势临时唤出） |
+| **isStatusBarDark** | `Boolean?` | `null` | 强制干预状态栏文字模式：<br>• **null**：基于本库的 CIEXYZ 亮度计算由背景色动态决定<br>• **true**：深黑文字<br>• **false**：纯白文字 |
+| **isNavigationBarDark** | `Boolean?` | `null` | 配置导航栏按钮颜色模式逻辑，同上。 |
 
-### 禁用沉浸式 - ImmersionBar.disable()
+### 动态刷新系统栏状态
 
-禁用沉浸式模式后，内容不再延伸到系统栏下方；系统栏颜色会恢复为进入沉浸式前的样式，状态栏文字深浅会按当前背景自动重算。
+在新框架中，如果你需要动态显示/隐藏，或者想要修改深浅色的配置，**只需用新的参数再次调用 `setupImmersion` 即可**。本方法极其轻量且安全，可反复覆盖调用而无性能副作用。
 
+例如在运行时关闭状态栏并强设由于背景变化需要的黑色文字：
 ```kotlin
-ImmersionBar.disable(activity: Activity)
-```
-
-### 更新系统栏状态 - ImmersionBar.updateSystemBars()
-
-动态更新系统栏的显示/隐藏状态。状态栏文字颜色由库自动根据背景亮度判断。
-
-```kotlin
-ImmersionBar.updateSystemBars(
-    activity: Activity,                    // 目标 Activity
-    showStatusBar: Boolean = true,         // 是否显示状态栏
-    showNavigationBar: Boolean = true      // 是否显示导航栏
+setupImmersion(
+    showStatusBar = false,
+    isStatusBarDark = true
 )
 ```
 
-### 辅助方法
+#### 系统信息获取（Kotlin 扩展属性）
 
-#### 状态栏文字控制
-
-```kotlin
-// 默认情况下库会自动判断状态栏文字深浅
-// 如需手动覆盖，可调用此方法
-ImmersionBar.setStatusBarTextDark(
-    activity: Activity,        // 目标 Activity
-    isDark: Boolean = true     // true=深色文字，false=浅色文字
-)
-```
-
-#### 系统信息获取
+框架提供了一组极为简便的扩展属性，能够直接从 Activity、Fragment 甚至是任意 View 身上获取。
 
 ```kotlin
 // 获取状态栏高度（像素）
-val statusBarHeight = ImmersionBar.getStatusBarHeight(context: Context)
+val statusBarH = this.statusBarHeight
 
 // 获取导航栏高度（像素）
-val navigationBarHeight = ImmersionBar.getNavigationBarHeight(context: Context)
+val navBarH = this.navigationBarHeight
 
-// 检查设备是否包含导航栏（返回 Boolean）
-val hasNavigationBar = ImmersionBar.hasNavigationBar(context: Context)
+// 一键获取 ActionBar / Toolbar 原生高度
+val actionBarH = this.actionBarHeight
 
-// 检查是否为刘海屏设备（返回 Boolean）
-val hasNotch = ImmersionBar.hasNotch(activity)
+// 检查设备是否包含导航栏
+val hasNavBar = this.hasNavigationBar
+
+// 检查是否为刘海屏设备
+val isNotch = this.hasNotch
 ```
 
-### 独立 View Padding 控制 - applyInsetsPadding
+#### 颜色与亮度判断（设计辅助）
 
-独立于 Activity 的沉浸式配置，为任意 View 单独应用 WindowInsets padding。
-
-#### 适用场景：全屏覆盖层 (Loading/Error View)
-
-当 Activity 启用沉浸式 (Edge-to-Edge) 后，内容会延伸到状态栏下方。如果页面上覆盖了一个全屏的 Loading 或 Error 页面，它的顶部内容（如标题栏）会被状态栏遮挡。
-
-此时，可以使用 `applyInsetsPadding` 为覆盖层的顶部 View 独立添加 padding，而不影响底层主页面的布局。
+提供了一组基于 AndroidX 最新标准的颜色与亮度扩展函数，能帮助应用精确掌控 Material Design 对比度表现。
 
 ```kotlin
-// 为 Loading View 的标题栏增加顶部 padding，避开状态栏
-ImmersionBar.applyInsetsPadding(
-    view = binding.tvStatusTitle,
-    paddingStatusBar = true,
-    paddingNavigationBar = false
+// 判断颜色在视觉感知上是否属于“浅色/亮色”
+// 基于 Android官方的 ColorUtils.calculateLuminance (CIEXYZ 颜色空间映射)
+val isLight = Color.WHITE.isLightColor() // 返回 true
+
+// 快速得到一个颜色的加深/变暗版本，方便做 Toolbar 折叠差值
+// factor: 暗化程度 0f(黑) ~ 1f(原色)，默认 0.7f
+val darkColor = baseColor.darkenColor() 
+// 或自定义比例
+val darkerColor = baseColor.darkenColor(0.5f) 
+```
+
+### 独立 View 布局避让 (Insets)
+
+框架提供了极其轻量化的局部扩展，专为那些处于沉浸式之下、但不希望被系统图层遮盖的 View 而设计。
+
+#### 1. Padding 避让模式
+适用于想要扩大 View 的内边距来让出状态栏空间的场景。
+```kotlin
+// 仅增加状态栏 Padding，参数代表是否启用增加
+view.applyStatusBarPadding(add = true)
+
+// 仅增加导航栏 Padding
+view.applyNavigationBarPadding(add = true)
+
+// 同时控制两个维度的 Padding
+view.applySystemBarsPadding(
+    addStatusBar = true,
+    addNavigationBar = false
 )
 ```
 
-#### 方法定义
-
+#### 2. Margin 避让模式
+适用于需要让整个 View 直接向下平移，不干涉其内部展示的场景。
 ```kotlin
-ImmersionBar.applyInsetsPadding(
-    view: View,
-    paddingStatusBar: Boolean = true,     // 是否添加状态栏 padding
-    paddingNavigationBar: Boolean = true  // 是否添加导航栏 padding
-)
+// 增加状态栏 Margin
+view.applyStatusBarMargin(add = true)
 
-// 清除 padding，恢复 View 的原始 padding
-ImmersionBar.clearInsetsPadding(view: View)
+// 增加导航栏 Margin
+view.applyNavigationBarMargin(add = true)
+
+// 同时控制两个维度的 Margin
+view.applySystemBarsMargin(addStatusBar = true, addNavigationBar = true)
 ```
 
 #### 核心特性
 
-1.  **独立性**：可独立使用，无需 Activity 启用 ImmersionBar.enable()。
-2.  **自动清理**：自动监听 View 的 attach/detach 状态，View 移除时自动释放监听器，防止内存泄漏。
-3.  **原始 Padding 保护**：应用前会记录 View 的原始 padding，清除或 detach 时自动恢复，适合动态 View 或 RecyclerView Item 使用。
+1.  **绝对安全，防叠加**：框架只会**记录一次** View 在 XML 中写好的初始 Padding 或 Margin。后续无论你怎么疯狂反复切换开关、不管 View 的大小被系统多少次重新测量，它的高度叠加只会在“基准值”上发生，绝不会无限长高，也绝不会出现关闭后吃掉原始 XML 高度的问题。
+2.  **极简低侵入**：去除了沉长繁琐的业务判断，底层仅使用局部闭包和轻便的 系统专属 View Tag 实现。
+3.  **支持动态增减**：传入 `add = false` 即可瞬间抽离因系统栏附加产生的高度，恢复其百分百本来的样子。
 
 
 ### Dialog 沉浸式
 
-#### 全屏 Dialog
+同样仅需调用我们提供的同名扩展方法即可。
+
+#### 全屏 / 常规 Dialog
 
 ```kotlin
-// 启用全屏 Dialog 沉浸式（内容延伸到系统栏下方）
-ImmersionBar.enableFullScreenDialog(
-    dialog: Dialog,                       // 目标 Dialog
-    darkStatusBarText: Boolean = true,    // 状态栏文字是否为深色
-    paddingStatusBar: Boolean = false,    // 是否添加状态栏 padding
-    paddingNavigationBar: Boolean = false // 是否添加导航栏 padding
+// 启用 Dialog 沉浸式扩展（内容延伸到系统栏下方）
+dialog.setupImmersion(
+    isStatusBarDark: Boolean? = null,
+    isNavigationBarDark: Boolean? = null
 )
 ```
 
-#### 底部弹窗
+#### 底部弹窗 BottomSheet
+
+专门针对底部弹窗设计了边缘延伸处理：
 
 ```kotlin
-// 启用底部弹窗沉浸式（导航栏透明）
-ImmersionBar.enableBottomSheetDialog(
-    dialog: Dialog,                       // 目标 Dialog
-    paddingNavigationBar: Boolean = false // 是否添加导航栏 padding
+// 启用底部弹窗沉浸式（导航栏透明并拉伸）
+bottomSheetDialog.setupBottomSheetImmersion(
+    isNavigationBarDark: Boolean? = null
 )
 ```
 
-#### Dialog 状态栏文字
+## 组合使用场景指南
 
-```kotlin
-// 动态设置 Dialog 状态栏文字颜色
-ImmersionBar.setDialogStatusBarTextDark(
-    dialog: Dialog,        // 目标 Dialog
-    isDark: Boolean = true // true=深色文字，false=浅色文字
-)
-```
+新架构将 **Window层沉浸** 与 **View层避让** 彻底解耦，你能极度灵活地拼装它们以达到各种需求：
 
-## 使用场景
+### 1. 推荐配置 (常规沉浸式页面)
 
-### 1. 推荐配置 (Demo默认效果)
-
-这种配置方式既保留了沉浸感（内容延伸到底部），又避免了顶部内容被状态栏遮挡。
+绝大多数带标题栏的普通界面，在内容透出到底部导航栏的同时，也要保证顶部不和状态栏重叠。
 
 ```kotlin
 class MainActivity : AppCompatActivity() {
@@ -207,93 +199,47 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 现代化沉浸式：
-        // 1. 状态栏添加 padding，避免内容被遮挡
-        // 2. 导航栏不加 padding，内容延伸到底部（配合透明导航栏）
-        ImmersionBar.enable(
-            activity = this,
-            paddingStatusBar = true,      // 避开状态栏
-            paddingNavigationBar = false  // 延伸到导航栏
+        // 1. (Window) 开启沉浸式，透明系统栏
+        setupImmersion()
+        
+        // 2. (View) 为最外层根布局增加顶部的状态栏 Padding，防止内容被遮挡
+        // 而底部由于没写 addNavigationBar=true，列表能够优雅地垫在透明导航栏下方滑动
+        findViewById<View>(android.R.id.content).applySystemBarsPadding(
+            addStatusBar = true,      // 避开状态栏
+            addNavigationBar = false  // 延伸铺满导航栏
         )
     }
 }
 ```
 
-### 2. 完全全屏 (内容延伸到所有区域)
+### 2. 传统沉浸式 (保守防遮挡)
+
+若你不想任何内容渗透到系统栏下方，只想保持系统栏透明改变其背景色而已，相当于传统的 FitsSystemWindows=true 效果。
 
 ```kotlin
-// 内容延伸到所有系统栏下方
-ImmersionBar.enable(
-    activity = this,
-    paddingStatusBar = false,     // 延伸到状态栏
-    paddingNavigationBar = false  // 延伸到导航栏
+setupImmersion()
+
+// 根布局同时避开上下两端
+view.applySystemBarsPadding(
+    addStatusBar = true,
+    addNavigationBar = true
 )
 ```
 
-### 3. 传统沉浸式 (保守模式)
+### 3. 全屏阅读 / 视频 / 图片查看器
+
+这通常不需要系统栏。
 
 ```kotlin
-// 类似传统 FitsSystemWindows=true 的效果
-ImmersionBar.enable(
-    activity = this,
-    paddingStatusBar = true,      // 避开状态栏
-    paddingNavigationBar = true   // 避开导航栏
+// 完全隐藏所有系统栏与导航条
+setupImmersion(
+    showStatusBar = false,
+    showNavigationBar = false
 )
+// 此时根本无需申请任何 Padding 避让
 ```
 
-### 4. 隐藏导航栏
-
-```kotlin
-// 隐藏导航栏，保持状态栏可见
-ImmersionBar.enable(
-    activity = this,
-    showStatusBar = true,
-    showNavigationBar = false, // 隐藏导航栏
-    paddingNavigationBar = false // 既然隐藏了，通常不需要 padding
-)
-```
-
-### 5. 深色背景场景
-
-```kotlin
-// 深色背景下，状态栏文字颜色会自动适配
-ImmersionBar.enable(
-    activity = this,
-    paddingStatusBar = true
-)
-```
-
-### 6. 动态切换沉浸式模式
-
-```kotlin
-class MainActivity : AppCompatActivity() {
-
-    private var isImmersionEnabled = true
-
-    private fun toggleImmersion() {
-        if (isImmersionEnabled) {
-            // 禁用沉浸式
-            ImmersionBar.disable(this)
-            // 禁用后仍可控制系统栏显示/隐藏
-            ImmersionBar.updateSystemBars(
-                activity = this,
-                showStatusBar = true,
-                showNavigationBar = true
-            )
-        } else {
-            // 启用沉浸式
-            ImmersionBar.enable(
-                activity = this,
-                paddingStatusBar = true,
-                paddingNavigationBar = false
-            )
-        }
-        isImmersionEnabled = !isImmersionEnabled
-    }
-}
-```
-
-### 7. 动态切换主题
+### 4. 动态更改主题与颜色
 
 ```kotlin
 class ThemedActivity : AppCompatActivity() {
@@ -305,23 +251,11 @@ class ThemedActivity : AppCompatActivity() {
             if (isLightTheme) Color.WHITE else Color.BLACK
         )
 
-        // 同步更新状态栏文字颜色
-        ImmersionBar.setStatusBarTextDark(this, isLightTheme)
+        // 背景变化了，再次调用一行代码
+        // 本库会依靠 backgroundColor 自动重算并把状态栏文字翻转深浅色
+        setupImmersion()
     }
 }
-```
-
-### 8. 全屏视频/图片查看器
-
-```kotlin
-// 完全沉浸式：隐藏所有系统栏 & 内容延伸
-ImmersionBar.enable(
-    activity = this,
-    showStatusBar = false,     // 隐藏状态栏
-    showNavigationBar = false, // 隐藏导航栏
-    paddingStatusBar = false,
-    paddingNavigationBar = false
-)
 ```
 
 ### 9. 全屏 Dialog
@@ -332,7 +266,7 @@ val dialog = Dialog(this, android.R.style.Theme_Translucent_NoTitleBar_Fullscree
 dialog.setContentView(R.layout.dialog_fullscreen)
 
 // 一行代码启用沉浸式
-ImmersionBar.enableFullScreenDialog(dialog)
+dialog.setupImmersion()
 
 dialog.show()
 ```
@@ -345,62 +279,28 @@ val bottomSheet = BottomSheetDialog(this)
 bottomSheet.setContentView(R.layout.dialog_bottom_sheet)
 
 // 一行代码启用沉浸式（导航栏透明）
-ImmersionBar.enableBottomSheetDialog(bottomSheet)
+bottomSheet.setupBottomSheetImmersion()
 
 bottomSheet.show()
 ```
 
-## 最佳实践
+## 最佳实践与注意事项
 
-### 推荐配置组合
+### 架构解耦思想
 
-```kotlin
-// 1. 现代化 Edge-to-Edge（推荐）
-ImmersionBar.enable(
-    activity = this,
-    paddingStatusBar = true,      // 顶部避让
-    paddingNavigationBar = false  // 底部延伸
-)
+新版 `ImmersionBar` 的核心哲学是 **Window 配置** 与 **View 空间避让** 的彻底分离。
 
-// 2. 全屏阅读/视频
-ImmersionBar.enable(
-    activity = this,
-    showStatusBar = false,
-    showNavigationBar = false,
-    paddingStatusBar = false,
-    paddingNavigationBar = false
-)
-```
+1. **Window 层 (`setupImmersion`)**
+   只负责：是否全屏延伸、是否显示/隐藏系统界面、并推断出顶部状态栏和底部导航小横条应该是黑色还是白色（解决 Android O 以上浅色底看不清的情况）。
+2. **View 层 (`apply***Padding/Margin`)**
+   只负责：把处于全面屏下的单个或一组 View（比如一个 Toolbar ，一个底部的悬浮按钮）向下或向上避开系统控件。
 
 ### 注意事项
 
-1. **paddingNavigationBar 参数**：
-   - 默认为 `true`（添加 padding）：内容不延伸到导航栏区域（推荐用于常规页面）
-   - 设置为 `false`（不添加 padding）：内容延伸到导航栏区域（推荐用于沉浸式主页/详情页）
-
-2. **版本兼容**：状态栏文字自动适配依赖系统能力，在 Android 6.0+ 才支持深浅色文字切换
-
-3. **手势导航**：隐藏的系统栏可通过手势随时唤出
-
-4. **性能优化**：避免在 `onCreate` 外频繁调用 `enable()` 方法
-
-5. **禁用沉浸式**：`disable()` 后会恢复进入沉浸式前的系统栏颜色，内容不再延伸到系统栏下方；状态栏文字深浅会根据当前背景自动重算
-
-6. **Padding 参数依赖关系**：
-   - `enable()` 的 `paddingStatusBar` 和 `paddingNavigationBar` 参数仅在沉浸式模式开启时有效
-   - 关闭沉浸式模式时，padding 设置会自动失效
-   - 在实现 UI 开关时，建议将 padding 开关的启用状态绑定到沉浸式开关状态
-   - 示例代码：
-     ```kotlin
-     // 沉浸式关闭时，禁用并关闭 padding 开关
-     if (!isChecked) {
-         binding.switchPaddingStatusBar.isChecked = false
-         binding.switchPaddingNavBar.isChecked = false
-     }
-     // 根据 immersive 状态控制 padding 开关是否可用
-     binding.switchPaddingStatusBar.isEnabled = isChecked
-     binding.switchPaddingNavBar.isEnabled = isChecked
-     ```
+1. **版本兼容**：状态栏与导航栏文字颜色推断及切换，依赖于系统级能力。深色文本要求系统 Android 6.0+。
+2. **手势导航**：隐藏的系统栏可通过手势随时唤出（设计为 `SHOW_TRANSIENT_BARS_BY_SWIPE`）。
+3. **安全重复调用**：无论是改变沉浸式策略(`setupImmersion`)，还是控制特定 View 避让的开关状态(`applySystemBarsPadding`)，在新框架底层均没有副作用，**你可以安全地在任何生命周期或者点击事件里随心所欲地重复调用它们**。
+4. **Padding 清理**：当 `add = false` 传入视图避让扩展方法时，View 将安全剥离因为 Insets 叠加产生的值，恢复到读取到的原始 XML 状态。
 
 
 

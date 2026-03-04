@@ -10,8 +10,11 @@ import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.materialswitch.MaterialSwitch
+import com.yzq.immersion.actionBarHeight
 import com.yzq.immersion.applyNavigationBarMargin
 import com.yzq.immersion.applyStatusBarPadding
+import com.yzq.immersion.darkenColor
+import com.yzq.immersion.isLightColor
 import com.yzq.immersion.setupImmersion
 import com.yzq.immersionbar_demo.databinding.ActivityDrawerDemoBinding
 
@@ -84,7 +87,6 @@ class DrawerDemoActivity : AppCompatActivity() {
         // Toolbar 需要手动适配高度 + padding（actionBarSize + 状态栏高度）
         ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val actionBarHeight = resolveActionBarHeight()
 
             binding.toolbar.layoutParams = binding.toolbar.layoutParams.apply {
                 height = actionBarHeight + systemBars.top
@@ -138,7 +140,7 @@ class DrawerDemoActivity : AppCompatActivity() {
             addUpdateListener { binding.mainContent.setBackgroundColor(it.animatedValue as Int) }
         }.start()
 
-        updateUIColors(isLightColor(color), color)
+        updateUIColors(color.isLightColor(), color)
     }
 
     private fun updateUIColors(isLightBg: Boolean, bgColor: Int) {
@@ -146,10 +148,10 @@ class DrawerDemoActivity : AppCompatActivity() {
         binding.switchDarkStatus.setTextColor(textColor)
         binding.switchShowStatus.setTextColor(textColor)
 
-        val toolbarColor = darkenColor(bgColor, if (isLightBg) 0.4f else 0.8f)
+        val toolbarColor = bgColor.darkenColor(if (isLightBg) 0.4f else 0.8f)
         binding.toolbar.setBackgroundColor(toolbarColor)
 
-        val isToolbarLight = isLightColor(toolbarColor)
+        val isToolbarLight = toolbarColor.isLightColor()
         val toolbarContentColor = if (isToolbarLight) Color.parseColor("#212121") else Color.WHITE
         binding.toolbar.setTitleTextColor(toolbarContentColor)
         toggle.drawerArrowDrawable.color = toolbarContentColor
@@ -161,7 +163,7 @@ class DrawerDemoActivity : AppCompatActivity() {
         updateImmersion()
 
         binding.btnToggleTheme.text = if (isLightBg) "切换为深色主题" else "切换为浅色主题"
-        binding.navView.getHeaderView(0).setBackgroundColor(darkenColor(toolbarColor, 0.85f))
+        binding.navView.getHeaderView(0).setBackgroundColor(toolbarColor.darkenColor(0.85f))
     }
 
     /**
@@ -175,27 +177,6 @@ class DrawerDemoActivity : AppCompatActivity() {
     }
 
     // ======================== 工具 ========================
-
-    private fun resolveActionBarHeight(): Int {
-        val typedValue = android.util.TypedValue()
-        return if (theme.resolveAttribute(android.R.attr.actionBarSize, typedValue, true)) {
-            android.util.TypedValue.complexToDimensionPixelSize(
-                typedValue.data, resources.displayMetrics
-            )
-        } else 0
-    }
-
-    private fun darkenColor(color: Int, factor: Float = 0.7f): Int {
-        return Color.rgb(
-            (Color.red(color) * factor).toInt().coerceIn(0, 255),
-            (Color.green(color) * factor).toInt().coerceIn(0, 255),
-            (Color.blue(color) * factor).toInt().coerceIn(0, 255),
-        )
-    }
-
-    private fun isLightColor(color: Int): Boolean {
-        return (Color.red(color) * 299 + Color.green(color) * 587 + Color.blue(color) * 114) / 1000 > 128
-    }
 
     private fun showSettingsDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_settings, null)

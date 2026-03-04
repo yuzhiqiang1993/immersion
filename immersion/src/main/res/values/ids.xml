@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 存储 View 原始 Padding 和 Margin 的 Tag ID -->
-    <!-- 避免直接使用 String.hashCode() 导致 IllegalArgumentException -->
     <item name="immersion_original_padding_top" type="id" />
     <item name="immersion_original_padding_bottom" type="id" />
     <item name="immersion_original_margin_top" type="id" />
