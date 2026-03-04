@@ -9,50 +9,9 @@ import androidx.core.view.WindowInsetsCompat
 /**
  * WindowInsets View 级避让扩展
  * 用于精细化控制哪些 View 需要避让系统栏。
- * 通过 View Tag 持久化原始 Padding/Margin，确保多次调用不会叠加。
  *
  * @author : yuzhiqiang
  */
-
-// Tag Key：用于在 View 上持久化原始 Padding/Margin
-private val TAG_ORIGINAL_PADDING_TOP = R.id.immersion_original_padding_top
-private val TAG_ORIGINAL_PADDING_BOTTOM = R.id.immersion_original_padding_bottom
-private val TAG_ORIGINAL_MARGIN_TOP = R.id.immersion_original_margin_top
-private val TAG_ORIGINAL_MARGIN_BOTTOM = R.id.immersion_original_margin_bottom
-
-/**
- * 安全地获取或初始化 View 的原始 PaddingTop。
- * 仅在首次调用时存储，后续调用直接复用，防止叠加。
- */
-private fun View.getOrSaveOriginalPaddingTop(): Int {
-    val saved = getTag(TAG_ORIGINAL_PADDING_TOP) as? Int
-    if (saved != null) return saved
-    setTag(TAG_ORIGINAL_PADDING_TOP, paddingTop)
-    return paddingTop
-}
-
-private fun View.getOrSaveOriginalPaddingBottom(): Int {
-    val saved = getTag(TAG_ORIGINAL_PADDING_BOTTOM) as? Int
-    if (saved != null) return saved
-    setTag(TAG_ORIGINAL_PADDING_BOTTOM, paddingBottom)
-    return paddingBottom
-}
-
-private fun View.getOrSaveOriginalMarginTop(): Int {
-    val saved = getTag(TAG_ORIGINAL_MARGIN_TOP) as? Int
-    if (saved != null) return saved
-    val margin = (layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin ?: 0
-    setTag(TAG_ORIGINAL_MARGIN_TOP, margin)
-    return margin
-}
-
-private fun View.getOrSaveOriginalMarginBottom(): Int {
-    val saved = getTag(TAG_ORIGINAL_MARGIN_BOTTOM) as? Int
-    if (saved != null) return saved
-    val margin = (layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
-    setTag(TAG_ORIGINAL_MARGIN_BOTTOM, margin)
-    return margin
-}
 
 // ======================== Padding 避让 ========================
 
@@ -60,13 +19,11 @@ private fun View.getOrSaveOriginalMarginBottom(): Int {
  * 为 View 增加状态栏高度的 PaddingTop
  */
 fun View.applyStatusBarPadding() {
-    val initialTop = getOrSaveOriginalPaddingTop()
-
     ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
         val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
         view.setPadding(
             view.paddingLeft,
-            initialTop + statusBarInsets.top,
+            statusBarInsets.top,
             view.paddingRight,
             view.paddingBottom
         )
@@ -79,15 +36,13 @@ fun View.applyStatusBarPadding() {
  * 为 View 增加导航栏高度的 PaddingBottom
  */
 fun View.applyNavigationBarPadding() {
-    val initialBottom = getOrSaveOriginalPaddingBottom()
-
     ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
         val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
         view.setPadding(
             view.paddingLeft,
             view.paddingTop,
             view.paddingRight,
-            initialBottom + navBarInsets.bottom
+            navBarInsets.bottom
         )
         insets
     }
@@ -96,14 +51,10 @@ fun View.applyNavigationBarPadding() {
 
 /**
  * 同时避让顶部状态栏和底部导航栏。
- * 可多次调用，参数变化时自动更新，不会叠加。
  */
 fun View.applySystemBarsPadding(
     addStatusBar: Boolean = true, addNavigationBar: Boolean = true
 ) {
-    val initialTop = getOrSaveOriginalPaddingTop()
-    val initialBottom = getOrSaveOriginalPaddingBottom()
-
     ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
         val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
         val topOffset = if (addStatusBar) systemBars.top else 0
@@ -111,9 +62,9 @@ fun View.applySystemBarsPadding(
 
         view.setPadding(
             view.paddingLeft,
-            initialTop + topOffset,
+            topOffset,
             view.paddingRight,
-            initialBottom + bottomOffset
+            bottomOffset
         )
         insets
     }
@@ -126,13 +77,11 @@ fun View.applySystemBarsPadding(
  * 为 View 增加状态栏高度的 MarginTop
  */
 fun View.applyStatusBarMargin() {
-    val initialMarginTop = getOrSaveOriginalMarginTop()
-
     ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
         val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
         val lp = view.layoutParams as? ViewGroup.MarginLayoutParams
         if (lp != null) {
-            lp.topMargin = initialMarginTop + statusBarInsets.top
+            lp.topMargin = statusBarInsets.top
             view.layoutParams = lp
         }
         insets
@@ -144,13 +93,11 @@ fun View.applyStatusBarMargin() {
  * 为 View 增加导航栏高度的 MarginBottom
  */
 fun View.applyNavigationBarMargin() {
-    val initialMarginBottom = getOrSaveOriginalMarginBottom()
-
     ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
         val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
         val lp = view.layoutParams as? ViewGroup.MarginLayoutParams
         if (lp != null) {
-            lp.bottomMargin = initialMarginBottom + navBarInsets.bottom
+            lp.bottomMargin = navBarInsets.bottom
             view.layoutParams = lp
         }
         insets
@@ -160,14 +107,10 @@ fun View.applyNavigationBarMargin() {
 
 /**
  * 同时以 Margin 方式避让顶部状态栏和底部导航栏。
- * 可多次调用，参数变化时自动更新，不会叠加。
  */
 fun View.applySystemBarsMargin(
     addStatusBar: Boolean = true, addNavigationBar: Boolean = true
 ) {
-    val initialMarginTop = getOrSaveOriginalMarginTop()
-    val initialMarginBottom = getOrSaveOriginalMarginBottom()
-
     ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
         val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
         val topOffset = if (addStatusBar) systemBars.top else 0
@@ -175,8 +118,8 @@ fun View.applySystemBarsMargin(
 
         val lp = view.layoutParams as? ViewGroup.MarginLayoutParams
         if (lp != null) {
-            lp.topMargin = initialMarginTop + topOffset
-            lp.bottomMargin = initialMarginBottom + bottomOffset
+            lp.topMargin = topOffset
+            lp.bottomMargin = bottomOffset
             view.layoutParams = lp
         }
         insets
