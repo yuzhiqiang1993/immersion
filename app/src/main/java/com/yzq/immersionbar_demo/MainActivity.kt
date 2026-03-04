@@ -8,8 +8,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.yzq.immersion.applySystemBarsMargin
 import com.yzq.immersion.applySystemBarsPadding
