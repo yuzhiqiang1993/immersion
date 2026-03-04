@@ -1,6 +1,6 @@
 # ImmersionBar
 
-[![Maven Central](https://img.shields.io/maven-central/v/com.xeonyu/immersionbar.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.xeonyu%20AND%20a:immersionbar)
+[![Maven Central](https://img.shields.io/maven-central/v/com.xeonyu/immersion.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.xeonyu%20AND%20a:immersion)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.7.21+-blue.svg)](https://kotlinlang.org)
@@ -20,11 +20,11 @@
 
 在模块的 `build.gradle.kts` 文件中添加依赖：
 
-> **最新版本**：请访问 [Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersionbar) 获取最新版本号。
+> **最新版本**：请访问 [Maven Central](https://central.sonatype.com/artifact/com.xeonyu/immersion) 获取最新版本号。
 
 ```kotlin
 dependencies {
-    implementation("com.xeonyu:immersionbar:x.x.x")
+    implementation("com.xeonyu:immersion:2.0.0") // 请替换为实际最新版
 }
 ```
 
