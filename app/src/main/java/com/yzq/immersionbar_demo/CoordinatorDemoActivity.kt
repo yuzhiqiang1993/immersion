@@ -14,9 +14,14 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.yzq.immersion.actionBarHeight
 import com.yzq.immersion.applyNavigationBarMargin
 import com.yzq.immersion.applyNavigationBarPadding
+import com.yzq.immersion.darkenColor
+import com.yzq.immersion.isLightColor
+import com.yzq.immersion.navigationBarHeight
 import com.yzq.immersion.setupImmersion
+import com.yzq.immersion.statusBarHeight
 import com.yzq.immersionbar_demo.databinding.ActivityCoordinatorDemoBinding
 import com.yzq.immersionbar_demo.databinding.ItemColorPickerBinding
 
@@ -73,7 +78,6 @@ class CoordinatorDemoActivity : AppCompatActivity() {
         // Toolbar 需要手动计算高度（actionBarSize + 状态栏），库不负责这类自定义尺寸
         ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val actionBarHeight = resolveActionBarHeight()
 
             binding.toolbar.layoutParams = binding.toolbar.layoutParams.apply {
                 height = actionBarHeight + systemBars.top
@@ -104,7 +108,7 @@ class CoordinatorDemoActivity : AppCompatActivity() {
     private fun updateColorsBasedOnState(baseColor: Int) {
         if (currentScrollProgress > 0.7f) {
             // 完全折叠：Toolbar 显示深色背景和白色标题
-            val collapsedColor = darkenColor(baseColor)
+            val collapsedColor = baseColor.darkenColor()
             binding.collapsingToolbar.setBackgroundColor(collapsedColor)
             binding.toolbar.setBackgroundColor(collapsedColor)
             binding.toolbar.title = "Coordinator 演示"
@@ -120,7 +124,7 @@ class CoordinatorDemoActivity : AppCompatActivity() {
             binding.toolbar.setBackgroundColor(Color.TRANSPARENT)
             binding.toolbar.title = ""
             updateHeaderContentColor(baseColor)
-            val shouldUseDarkText = isLightColor(baseColor)
+            val shouldUseDarkText = baseColor.isLightColor()
             isDarkStatusBarText = shouldUseDarkText
             updateImmersion()
             val iconColor = if (shouldUseDarkText) Color.rgb(33, 33, 33) else Color.WHITE
@@ -172,7 +176,7 @@ class CoordinatorDemoActivity : AppCompatActivity() {
             }
         }.start()
 
-        val shouldUseDarkText = isLightColor(color)
+        val shouldUseDarkText = color.isLightColor()
         if (shouldUseDarkText != isDarkStatusBarText) {
             isDarkStatusBarText = shouldUseDarkText
             binding.switchDarkStatus.isChecked = shouldUseDarkText
@@ -193,7 +197,7 @@ class CoordinatorDemoActivity : AppCompatActivity() {
     }
 
     private fun updateHeaderContentColor(backgroundColor: Int) {
-        val isLightBg = isLightColor(backgroundColor)
+        val isLightBg = backgroundColor.isLightColor()
         val linearLayout = binding.collapsingToolbar.getChildAt(0) as? LinearLayout
         if (linearLayout != null && linearLayout.childCount >= 2) {
             val textColor = if (isLightBg) Color.rgb(33, 33, 33) else Color.WHITE
@@ -209,40 +213,13 @@ class CoordinatorDemoActivity : AppCompatActivity() {
 
     // ======================== 工具 ========================
 
-    private fun resolveActionBarHeight(): Int {
-        val typedValue = android.util.TypedValue()
-        return if (theme.resolveAttribute(android.R.attr.actionBarSize, typedValue, true)) {
-            android.util.TypedValue.complexToDimensionPixelSize(
-                typedValue.data, resources.displayMetrics
-            )
-        } else 0
-    }
-
-    private fun isLightColor(color: Int): Boolean {
-        return (Color.red(color) * 299 + Color.green(color) * 587 + Color.blue(color) * 114) / 1000 > 128
-    }
-
-    private fun darkenColor(color: Int): Int {
-        val factor = 0.7f
-        return Color.rgb(
-            (Color.red(color) * factor).toInt(),
-            (Color.green(color) * factor).toInt(),
-            (Color.blue(color) * factor).toInt()
-        )
-    }
-
     private fun updateSystemInfo() {
         binding.root.post {
-            val insets = ViewCompat.getRootWindowInsets(binding.root)
             val sb = StringBuilder()
             sb.append("系统信息:\n")
             sb.append("• Android 版本: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})\n")
-            if (insets != null) {
-                val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-                val navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-                sb.append("• 状态栏高度: ${statusBar.top}px\n")
-                sb.append("• 导航栏高度: ${navBar.bottom}px\n")
-            }
+            sb.append("• 状态栏高度: ${statusBarHeight}px\n")
+            sb.append("• 导航栏高度: ${navigationBarHeight}px\n")
             sb.append("• 状态栏文字: ${if (isDarkStatusBarText) "深色" else "浅色"}")
             binding.tvInfo.text = sb.toString()
         }

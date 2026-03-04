@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="32dp"
-                android:text="ImmersionBar"
+                android:text="Immersion"
                 android:textColor="#212121"
                 android:textSize="34sp"
                 android:textStyle="bold" />
@@ -85,7 +85,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:checked="true"
+                        android:checked="false"
                         android:text="状态栏 Padding"
                         android:textColor="#212121"
                         android:textSize="16sp" />

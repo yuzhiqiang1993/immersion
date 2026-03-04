@@ -14,8 +14,6 @@ import androidx.core.view.WindowInsetsControllerCompat
  * Activity 沉浸式扩展
  * 基于 Android 15 强制 Edge-to-Edge 规范设计。
  * 只负责 Window 级别的全屏铺设和系统栏外观配置，
- * 绝不干涉任何 View 的 Padding/Margin。
- *
  * @author : yuzhiqiang
  */
 
@@ -36,16 +34,16 @@ fun Activity.setupImmersion(
     val window = this.window
     val decorView = window.decorView
 
-    // 1. 核心：允许内容延伸到系统栏下方（Edge-to-Edge 的本质）
+    // 启用 Edge-to-Edge 允许内容延伸到系统栏下方
     WindowCompat.setDecorFitsSystemWindows(window, false)
 
-    // 适配刘海屏，允许内容延伸到刘海区域（否则全屏时顶部会有黑条）
+    // 适配刘海屏，允许内容延伸到刘海区域
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         window.attributes.layoutInDisplayCutoutMode =
             android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
     }
 
-    // 2. 强制系统栏背景全透明
+    // 强制系统栏背景全透明
     window.statusBarColor = Color.TRANSPARENT
     window.navigationBarColor = Color.TRANSPARENT
 
@@ -57,13 +55,14 @@ fun Activity.setupImmersion(
 
     val controller = WindowInsetsControllerCompat(window, decorView)
 
-    // 3. 配置可见性
+    // 状态栏的可见性
     if (showStatusBar) {
         controller.show(WindowInsetsCompat.Type.statusBars())
     } else {
         controller.hide(WindowInsetsCompat.Type.statusBars())
     }
 
+    //导航栏的可见性
     if (showNavigationBar) {
         controller.show(WindowInsetsCompat.Type.navigationBars())
     } else {
@@ -74,26 +73,29 @@ fun Activity.setupImmersion(
     controller.systemBarsBehavior =
         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
-    // 4. 状态栏文字深浅色：null 时自动根据背景推断
-    val resolvedStatusBarDark = isStatusBarDark ?: resolveStatusBarAppearance(this)
+    // 智能推断：根据页面背景判断是否应使用深色文字/图标
+    // 使用 lazy 延迟计算，如果用户显式指定了双方颜色，则不执行推断逻辑
+    val autoDarkAppearance by lazy { resolveSystemBarAppearance(this) }
+
+    // 状态栏文字深浅色：null 时自动根据背景推断
+    val resolvedStatusBarDark = isStatusBarDark ?: autoDarkAppearance
     controller.isAppearanceLightStatusBars = resolvedStatusBarDark
 
-    // 5. 导航栏文字深浅色：仅在手动指定时生效
-    if (isNavigationBarDark != null) {
-        controller.isAppearanceLightNavigationBars = isNavigationBarDark
-    }
+    // 导航栏文字深浅色：null 时自动根据背景推断
+    val resolvedNavBarDark = isNavigationBarDark ?: autoDarkAppearance
+    controller.isAppearanceLightNavigationBars = resolvedNavBarDark
 }
 
 // ======================== 自动推断辅助函数 ========================
 
 /**
- * 根据页面背景色自动推断状态栏文字应该是深色还是浅色
- * 亮色背景 → 返回 true (深色文字)
- * 暗色背景 → 返回 false (浅色文字)
+ * 根据页面背景色自动推断系统栏内容（文字/图标）应该是深色还是浅色
+ * 亮色背景 → 返回 true (需要深色内容)
+ * 暗色背景 → 返回 false (需要浅色内容)
  */
-private fun resolveStatusBarAppearance(activity: Activity): Boolean {
+private fun resolveSystemBarAppearance(activity: Activity): Boolean {
     val bgColor = resolveBackgroundColor(activity)
-    return isLightColor(bgColor)
+    return bgColor.isLightColor()
 }
 
 /**
@@ -131,12 +133,36 @@ private fun blendWithWhite(color: Int): Int {
 }
 
 /**
- * 基于 ITU-R BT.601 标准的亮度公式判断颜色是否为亮色
+ * 判断当前颜色是否为亮色（基于 AndroidX ColorUtils 的光度计算）
  */
-private fun isLightColor(color: Int): Boolean {
-    val r = Color.red(color)
-    val g = Color.green(color)
-    val b = Color.blue(color)
-    val brightness = (r * 299 + g * 587 + b * 114) / 1000
-    return brightness > 128
+fun Int.isLightColor(): Boolean {
+    // calculateLuminance 返回 0.0 (黑) ~ 1.0 (白) 的亮度值
+    // 通常约定 0.5 作为亮/暗的临界点
+    return androidx.core.graphics.ColorUtils.calculateLuminance(this) > 0.5
 }
+
+/**
+ * 将当前颜色按比例加深。
+ * @param factor 变暗系数，默认 0.7f
+ */
+fun Int.darkenColor(factor: Float = 0.7f): Int {
+    return Color.rgb(
+        (Color.red(this) * factor).toInt().coerceIn(0, 255),
+        (Color.green(this) * factor).toInt().coerceIn(0, 255),
+        (Color.blue(this) * factor).toInt().coerceIn(0, 255)
+    )
+}
+
+/**
+ * 获取当前主题配置的 ActionBar 高度像素值。
+ * 无法获取时默认返回 0。
+ */
+val android.content.Context.actionBarHeight: Int
+    get() {
+        val typedValue = android.util.TypedValue()
+        return if (theme.resolveAttribute(android.R.attr.actionBarSize, typedValue, true)) {
+            android.util.TypedValue.complexToDimensionPixelSize(
+                typedValue.data, resources.displayMetrics
+            )
+        } else 0
+    }

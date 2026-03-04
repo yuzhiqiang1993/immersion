@@ -20,15 +20,13 @@ import androidx.core.view.WindowInsetsControllerCompat
  * @param isNavigationBarDark 导航栏文字图标深浅色。null 表示不干预
  */
 fun Dialog.setupImmersion(
-    isStatusBarDark: Boolean? = null,
-    isNavigationBarDark: Boolean? = null
+    isStatusBarDark: Boolean? = null, isNavigationBarDark: Boolean? = null
 ) {
     val window = this.window ?: return
 
     // 确保 Dialog 填满整个屏幕
     window.setLayout(
-        ViewGroup.LayoutParams.MATCH_PARENT,
-        ViewGroup.LayoutParams.MATCH_PARENT
+        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
     )
 
     // 内容延伸到系统栏下方
