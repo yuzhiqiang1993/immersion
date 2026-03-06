@@ -6,7 +6,6 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
@@ -16,28 +15,6 @@ import androidx.core.view.WindowInsetsControllerCompat
  * 只负责 Window 级别的全屏铺设和系统栏外观配置，
  * @author : yuzhiqiang
  */
-
-/**
- * 沉浸式策略。
- * - [Auto]：默认策略，优先保障不同 Android 版本下的可读性与兼容性
- * - [Transparent]：保持系统栏完全透明，追求更强视觉沉浸感
- */
-enum class ImmersionStrategy {
-    Auto,
-    Transparent
-}
-
-/**
- * 沉浸式高级配置。
- * 普通场景建议继续使用基础重载，只有在需要策略控制时再使用本配置。
- */
-data class ImmersionOptions(
-    val showStatusBar: Boolean = true,
-    val showNavigationBar: Boolean = true,
-    val isStatusBarDark: Boolean? = null,
-    val isNavigationBarDark: Boolean? = null,
-    val strategy: ImmersionStrategy = ImmersionStrategy.Auto
-)
 
 /**
  * 针对 Activity 的 Window 开启 Edge-to-Edge 并配置系统栏外观。
@@ -58,8 +35,7 @@ fun Activity.setupImmersion(
             showStatusBar = showStatusBar,
             showNavigationBar = showNavigationBar,
             isStatusBarDark = isStatusBarDark,
-            isNavigationBarDark = isNavigationBarDark,
-            strategy = ImmersionStrategy.Transparent
+            isNavigationBarDark = isNavigationBarDark
         )
     )
 }
@@ -68,18 +44,13 @@ fun Activity.setupImmersion(
  * Activity 沉浸式高级重载。
  * 可在保持默认易用性的同时，通过 [ImmersionOptions.strategy] 控制视觉与兼容策略。
  */
+@Suppress("DEPRECATION")
 fun Activity.setupImmersion(options: ImmersionOptions) {
     val window = this.window
     val decorView = window.decorView
 
-    // 启用 Edge-to-Edge 允许内容延伸到系统栏下方
-    WindowCompat.setDecorFitsSystemWindows(window, false)
-
-    // 适配刘海屏，允许内容延伸到刘海区域
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        window.attributes.layoutInDisplayCutoutMode =
-            android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-    }
+    // 启用 Edge-to-Edge，允许内容延伸到系统栏与刘海区域
+    window.configureEdgeToEdgeLayout(applyCutoutMode = true)
 
     // 智能推断：根据页面背景判断是否应使用深色文字/图标
     // 使用 lazy 延迟计算，如果用户显式指定了双方颜色，则不执行推断逻辑
@@ -96,11 +67,7 @@ fun Activity.setupImmersion(options: ImmersionOptions) {
     window.navigationBarColor = resolveNavigationBarColor(options.strategy, resolvedNavBarDark)
 
     // Android 10+：Auto 保持系统对比度保护；Transparent 关闭以追求纯视觉效果
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val disableContrast = shouldDisableContrastEnforcement(options.strategy)
-        window.isStatusBarContrastEnforced = !disableContrast
-        window.isNavigationBarContrastEnforced = !disableContrast
-    }
+    window.applyContrastEnforcement(options.strategy)
 
     val controller = WindowInsetsControllerCompat(window, decorView)
 
@@ -119,8 +86,7 @@ fun Activity.setupImmersion(options: ImmersionOptions) {
     }
 
     // 隐藏系统栏时的行为：手势滑动可临时唤出
-    controller.systemBarsBehavior =
-        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    controller.useTransientBarsBySwipe()
     controller.isAppearanceLightStatusBars = resolvedStatusBarDark
     controller.isAppearanceLightNavigationBars =
         resolveNavigationBarAppearance(resolvedNavBarDark)

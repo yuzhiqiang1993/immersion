@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
 为 Activity 的 Window 开启 Edge-to-Edge，并一次性完成包括显示策略、刘海屏适配、底座深浅色判断等沉浸式设置。
 
 ```kotlin
-// 默认为：系统栏全开，文字颜色根据背景色智能推断
+// 默认为：系统栏全开，文字颜色根据背景色智能推断，策略为 Transparent（沉浸感优先）
 setupImmersion(
     showStatusBar: Boolean = true,         // 可选 - 是否显示状态栏
     showNavigationBar: Boolean = true,     // 可选 - 是否显示导航栏
@@ -73,11 +73,18 @@ setupImmersion(
 
 #### 高级策略（可选）
 
-默认调用已经足够覆盖大多数场景（默认策略为 `Auto`）。
+默认调用已经足够覆盖大多数场景：
+
+- `setupImmersion(...)`（轻量重载）默认使用 `ImmersionStrategy.Transparent`，沉浸感优先。
+- `setupImmersion(ImmersionOptions(...))`（高级重载）中，`ImmersionOptions.strategy` 默认值是 `ImmersionStrategy.Auto`。
 
 当你需要更明确地控制视觉效果与兼容策略时，可使用高级重载：
 
 ```kotlin
+// 兼容优先（ImmersionOptions 默认就是 Auto）
+setupImmersion(ImmersionOptions())
+
+// 显式使用强沉浸效果
 setupImmersion(
     ImmersionOptions(
         strategy = ImmersionStrategy.Transparent
@@ -87,8 +94,8 @@ setupImmersion(
 
 策略说明：
 
-- `ImmersionStrategy.Auto`（默认）：优先保障兼容性。在 API 23~25 上若导航栏需要深色图标，会自动回退半透明深色底以保证白色图标可读。
-- `ImmersionStrategy.Transparent`：保持导航栏全透明，追求更强沉浸感。
+- `ImmersionStrategy.Transparent`：视觉优先。导航栏保持全透明；在 Android 10+ 会关闭系统栏对比度保护。
+- `ImmersionStrategy.Auto`：兼容优先。在 API 23~25 上若导航栏需要深色图标，会自动回退半透明深色底以保证白色图标可读；在 Android 10+ 保持系统栏对比度保护。
 
 ### 动态刷新系统栏状态
 
@@ -107,20 +114,16 @@ setupImmersion(
 框架提供了一组极为简便的扩展属性，能够直接从 Activity、Fragment 甚至是任意 View 身上获取。
 
 ```kotlin
-// 获取状态栏高度（像素）
+// 从 Activity 获取状态栏/导航栏高度（像素）
 val statusBarH = this.statusBarHeight
-
-// 获取导航栏高度（像素）
 val navBarH = this.navigationBarHeight
 
 // 一键获取 ActionBar / Toolbar 原生高度
 val actionBarH = this.actionBarHeight
 
-// 检查设备是否包含导航栏
-val hasNavBar = this.hasNavigationBar
-
-// 检查是否为刘海屏设备
-val isNotch = this.hasNotch
+// 从任意 View 获取状态栏/导航栏高度（像素）
+val viewStatusBarH = someView.statusBarHeight
+val viewNavBarH = someView.navigationBarHeight
 ```
 
 #### 颜色与亮度判断（设计辅助）
@@ -202,7 +205,7 @@ dialog.setupImmersion(
 // 启用底部弹窗沉浸式（导航栏透明并拉伸）
 bottomSheetDialog.setupBottomSheetImmersion(
     isNavigationBarDark: Boolean? = null,
-    strategy: ImmersionStrategy = ImmersionStrategy.Auto
+    strategy: ImmersionStrategy = ImmersionStrategy.Transparent
 )
 ```
 
@@ -305,6 +308,8 @@ bottomSheet.setupBottomSheetImmersion()
 bottomSheet.show()
 ```
 
+> Demo 中的 `dialog_bottom_sheet.xml` 已内置输入框 `et_bottom_sheet_input`，可直接用于测试软键盘弹起时的沉浸式表现。
+
 ## 最佳实践与注意事项
 
 ### 架构解耦思想
@@ -318,7 +323,7 @@ bottomSheet.show()
 
 ### 注意事项
 
-1. **版本兼容**：最低支持 Android 6.0（API 23）。状态栏深色图标能力从 Android 6.0 起支持，导航栏深色图标能力从 Android 8.0（API 26）起支持；在 API 23~25 下，默认 `Auto` 策略会自动进行可读性兜底。
+1. **版本兼容**：最低支持 Android 6.0（API 23）。状态栏深色图标能力从 Android 6.0 起支持，导航栏深色图标能力从 Android 8.0（API 26）起支持；在 API 23~25 下导航栏不支持深色图标。当前 `setupImmersion(...)` 与 `setupBottomSheetImmersion()` 默认使用 `Transparent`（沉浸优先），如浅色底部背景下更关注可读性，建议显式传 `strategy = ImmersionStrategy.Auto`；`Dialog.setupImmersion()` 默认即为 `Auto`。
 2. **手势导航**：隐藏的系统栏可通过手势随时唤出（设计为 `SHOW_TRANSIENT_BARS_BY_SWIPE`）。
 3. **安全重复调用**：无论是改变沉浸式策略(`setupImmersion`)，还是控制特定 View 避让的开关状态(`applySystemBarsPadding`)，在新框架底层均没有副作用，**你可以安全地在任何生命周期或者点击事件里随心所欲地重复调用它们**。
 4. **Padding 清理**：当 `add = false` 传入视图避让扩展方法时，View 将安全剥离因为 Insets 叠加产生的值，恢复到读取到的原始 XML 状态。
