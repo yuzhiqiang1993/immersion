@@ -2,9 +2,7 @@ package com.yzq.immersion
 
 import android.app.Dialog
 import android.graphics.Color
-import android.os.Build
 import android.view.ViewGroup
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
 /**
@@ -20,6 +18,7 @@ import androidx.core.view.WindowInsetsControllerCompat
  * @param isNavigationBarDark 导航栏文字图标深浅色。null 表示不干预
  * @param strategy 沉浸式策略，默认 [ImmersionStrategy.Auto]
  */
+@Suppress("DEPRECATION")
 fun Dialog.setupImmersion(
     isStatusBarDark: Boolean? = null,
     isNavigationBarDark: Boolean? = null,
@@ -32,14 +31,8 @@ fun Dialog.setupImmersion(
         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
     )
 
-    // 内容延伸到系统栏下方
-    WindowCompat.setDecorFitsSystemWindows(window, false)
-
-    // 适配刘海屏，允许 Dialog 内容延伸到刘海区域
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        window.attributes.layoutInDisplayCutoutMode =
-            android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-    }
+    // 内容延伸到系统栏与刘海区域
+    window.configureEdgeToEdgeLayout(applyCutoutMode = true)
 
     // 状态栏保持透明
     window.statusBarColor = Color.TRANSPARENT
@@ -48,11 +41,7 @@ fun Dialog.setupImmersion(
     window.navigationBarColor = resolveNavigationBarColor(strategy, resolvedNavBarDark)
 
     // Android 10+：Auto 保持系统对比度保护；Transparent 关闭以追求纯视觉效果
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val disableContrast = shouldDisableContrastEnforcement(strategy)
-        window.isStatusBarContrastEnforced = !disableContrast
-        window.isNavigationBarContrastEnforced = !disableContrast
-    }
+    window.applyContrastEnforcement(strategy)
 
     val controller = WindowInsetsControllerCompat(window, window.decorView)
 
@@ -64,28 +53,30 @@ fun Dialog.setupImmersion(
             resolveNavigationBarAppearance(isNavigationBarDark)
     }
 
-    controller.systemBarsBehavior =
-        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    controller.useTransientBarsBySwipe()
 }
 
 /**
  * 专门用于 BottomSheetDialog 等底部弹窗的便捷方法。
  * 让导航栏变为透明，弹窗内容可以画到导航栏下面。
  */
+@Suppress("DEPRECATION")
 fun Dialog.setupBottomSheetImmersion(
     isNavigationBarDark: Boolean? = null,
     strategy: ImmersionStrategy = ImmersionStrategy.Transparent
 ) {
     val window = this.window ?: return
 
-    WindowCompat.setDecorFitsSystemWindows(window, false)
+    window.configureEdgeToEdgeLayout(applyCutoutMode = false)
 
     val resolvedNavBarDark = isNavigationBarDark ?: false
     window.navigationBarColor = resolveNavigationBarColor(strategy, resolvedNavBarDark)
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        window.isNavigationBarContrastEnforced = !shouldDisableContrastEnforcement(strategy)
-    }
+    window.applyContrastEnforcement(
+        strategy = strategy,
+        applyStatusBar = false,
+        applyNavigationBar = true
+    )
 
     if (isNavigationBarDark != null) {
         val controller = WindowInsetsControllerCompat(window, window.decorView)
