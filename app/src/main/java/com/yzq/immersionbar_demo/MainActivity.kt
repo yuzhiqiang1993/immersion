@@ -9,15 +9,9 @@ import android.view.View
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.yzq.immersion.applySystemBarsMargin
-import com.yzq.immersion.applySystemBarsPadding
-import com.yzq.immersion.navigationBarHeight
-import com.yzq.immersion.setupBottomSheetImmersion
-import com.yzq.immersion.setupImmersion
-import com.yzq.immersion.statusBarHeight
-import com.yzq.immersion.isLightColor
+import com.yzq.immersion.*
 import com.yzq.immersionbar_demo.databinding.ActivityMainBinding
-import java.util.Random
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -116,9 +110,6 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnFullScreenDialog.setOnClickListener { showFullScreenDialog() }
         binding.btnBottomSheet.setOnClickListener { showBottomSheetDialog() }
-        binding.btnViewPadding.setOnClickListener {
-            startActivity(Intent(this, ViewPaddingDemoActivity::class.java))
-        }
     }
 
     private fun showFullScreenDialog() {
