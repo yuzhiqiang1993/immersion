@@ -4,4 +4,5 @@
     <item name="immersion_original_padding_bottom" type="id" />
     <item name="immersion_original_margin_top" type="id" />
     <item name="immersion_original_margin_bottom" type="id" />
+    <item name="immersion_insets_state" type="id" />
 </resources>

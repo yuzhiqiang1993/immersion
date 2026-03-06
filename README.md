@@ -2,7 +2,7 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.xeonyu/immersion.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.xeonyu%20AND%20a:immersion)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
+[![API](https://img.shields.io/badge/API-23%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=23)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.7.21+-blue.svg)](https://kotlinlang.org)
 
 一个现代化的 Android 沉浸式状态栏库，基于 Android 官方推荐的 Edge-to-Edge 模式设计，提供简洁易用的 API。
@@ -10,7 +10,7 @@
 ## 特性
 
 - **现代化实现**: 基于 Android 15+ 官方推荐的 Edge-to-Edge 模式
-- **全面兼容**: 支持 API 21+ (Android 5.0+)
+- **全面兼容**: 支持 API 23+ (Android 6.0+)
 - **灵活配置**: 支持状态栏、导航栏精细化独立避让（Padding & Margin两套方案）
 - **智能设色**: 根据背景色（基于 CIEXYZ 亮度模型）自动匹配状态栏深浅文字
 - **开发利器**: 丰富的 Kotlin 扩展（高度获取、颜色亮度判断、变暗等）
@@ -70,6 +70,25 @@ setupImmersion(
 | **showNavigationBar** | `Boolean` | `true` | 是否可见导航栏。<br>• **false**：隐藏导航栏（可通过上滑手势临时唤出） |
 | **isStatusBarDark** | `Boolean?` | `null` | 强制干预状态栏文字模式：<br>• **null**：基于本库的 CIEXYZ 亮度计算由背景色动态决定<br>• **true**：深黑文字<br>• **false**：纯白文字 |
 | **isNavigationBarDark** | `Boolean?` | `null` | 配置导航栏按钮颜色模式逻辑，同上。 |
+
+#### 高级策略（可选）
+
+默认调用已经足够覆盖大多数场景（默认策略为 `Auto`）。
+
+当你需要更明确地控制视觉效果与兼容策略时，可使用高级重载：
+
+```kotlin
+setupImmersion(
+    ImmersionOptions(
+        strategy = ImmersionStrategy.Transparent
+    )
+)
+```
+
+策略说明：
+
+- `ImmersionStrategy.Auto`（默认）：优先保障兼容性。在 API 23~25 上若导航栏需要深色图标，会自动回退半透明深色底以保证白色图标可读。
+- `ImmersionStrategy.Transparent`：保持导航栏全透明，追求更强沉浸感。
 
 ### 动态刷新系统栏状态
 
@@ -170,7 +189,8 @@ view.applySystemBarsMargin(addStatusBar = true, addNavigationBar = true)
 // 启用 Dialog 沉浸式扩展（内容延伸到系统栏下方）
 dialog.setupImmersion(
     isStatusBarDark: Boolean? = null,
-    isNavigationBarDark: Boolean? = null
+    isNavigationBarDark: Boolean? = null,
+    strategy: ImmersionStrategy = ImmersionStrategy.Auto
 )
 ```
 
@@ -181,7 +201,8 @@ dialog.setupImmersion(
 ```kotlin
 // 启用底部弹窗沉浸式（导航栏透明并拉伸）
 bottomSheetDialog.setupBottomSheetImmersion(
-    isNavigationBarDark: Boolean? = null
+    isNavigationBarDark: Boolean? = null,
+    strategy: ImmersionStrategy = ImmersionStrategy.Auto
 )
 ```
 
@@ -297,7 +318,7 @@ bottomSheet.show()
 
 ### 注意事项
 
-1. **版本兼容**：状态栏与导航栏文字颜色推断及切换，依赖于系统级能力。深色文本要求系统 Android 6.0+。
+1. **版本兼容**：最低支持 Android 6.0（API 23）。状态栏深色图标能力从 Android 6.0 起支持，导航栏深色图标能力从 Android 8.0（API 26）起支持；在 API 23~25 下，默认 `Auto` 策略会自动进行可读性兜底。
 2. **手势导航**：隐藏的系统栏可通过手势随时唤出（设计为 `SHOW_TRANSIENT_BARS_BY_SWIPE`）。
 3. **安全重复调用**：无论是改变沉浸式策略(`setupImmersion`)，还是控制特定 View 避让的开关状态(`applySystemBarsPadding`)，在新框架底层均没有副作用，**你可以安全地在任何生命周期或者点击事件里随心所欲地重复调用它们**。
 4. **Padding 清理**：当 `add = false` 传入视图避让扩展方法时，View 将安全剥离因为 Insets 叠加产生的值，恢复到读取到的原始 XML 状态。
