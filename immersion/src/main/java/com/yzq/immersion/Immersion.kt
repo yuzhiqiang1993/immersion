@@ -18,12 +18,34 @@ import androidx.core.view.WindowInsetsControllerCompat
  */
 
 /**
+ * 沉浸式策略。
+ * - [Auto]：默认策略，优先保障不同 Android 版本下的可读性与兼容性
+ * - [Transparent]：保持系统栏完全透明，追求更强视觉沉浸感
+ */
+enum class ImmersionStrategy {
+    Auto,
+    Transparent
+}
+
+/**
+ * 沉浸式高级配置。
+ * 普通场景建议继续使用基础重载，只有在需要策略控制时再使用本配置。
+ */
+data class ImmersionOptions(
+    val showStatusBar: Boolean = true,
+    val showNavigationBar: Boolean = true,
+    val isStatusBarDark: Boolean? = null,
+    val isNavigationBarDark: Boolean? = null,
+    val strategy: ImmersionStrategy = ImmersionStrategy.Auto
+)
+
+/**
  * 针对 Activity 的 Window 开启 Edge-to-Edge 并配置系统栏外观。
  *
  * @param showStatusBar 是否显示状态栏
  * @param showNavigationBar 是否显示导航栏
  * @param isStatusBarDark 状态栏内容(文字/图标)是否为深色。null 表示根据背景色自动推断
- * @param isNavigationBarDark 导航栏内容图标是否为深色。null 表示不干预
+ * @param isNavigationBarDark 导航栏内容图标是否为深色。null 表示根据背景色自动推断
  */
 fun Activity.setupImmersion(
     showStatusBar: Boolean = true,
@@ -31,6 +53,22 @@ fun Activity.setupImmersion(
     isStatusBarDark: Boolean? = null,
     isNavigationBarDark: Boolean? = null
 ) {
+    setupImmersion(
+        ImmersionOptions(
+            showStatusBar = showStatusBar,
+            showNavigationBar = showNavigationBar,
+            isStatusBarDark = isStatusBarDark,
+            isNavigationBarDark = isNavigationBarDark,
+            strategy = ImmersionStrategy.Transparent
+        )
+    )
+}
+
+/**
+ * Activity 沉浸式高级重载。
+ * 可在保持默认易用性的同时，通过 [ImmersionOptions.strategy] 控制视觉与兼容策略。
+ */
+fun Activity.setupImmersion(options: ImmersionOptions) {
     val window = this.window
     val decorView = window.decorView
 
@@ -43,27 +81,38 @@ fun Activity.setupImmersion(
             android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
     }
 
-    // 强制系统栏背景全透明
-    window.statusBarColor = Color.TRANSPARENT
-    window.navigationBarColor = Color.TRANSPARENT
+    // 智能推断：根据页面背景判断是否应使用深色文字/图标
+    // 使用 lazy 延迟计算，如果用户显式指定了双方颜色，则不执行推断逻辑
+    val autoDarkAppearance by lazy { resolveSystemBarAppearance(this) }
 
-    // 取消系统强制的对比度保护 (Android 10+)
+    // 状态栏文字深浅色：null 时自动根据背景推断
+    val resolvedStatusBarDark = options.isStatusBarDark ?: autoDarkAppearance
+
+    // 导航栏文字深浅色：null 时自动根据背景推断
+    val resolvedNavBarDark = options.isNavigationBarDark ?: autoDarkAppearance
+
+    // 状态栏保持透明，导航栏根据策略按需回退可读性兜底
+    window.statusBarColor = Color.TRANSPARENT
+    window.navigationBarColor = resolveNavigationBarColor(options.strategy, resolvedNavBarDark)
+
+    // Android 10+：Auto 保持系统对比度保护；Transparent 关闭以追求纯视觉效果
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        window.isStatusBarContrastEnforced = false
-        window.isNavigationBarContrastEnforced = false
+        val disableContrast = shouldDisableContrastEnforcement(options.strategy)
+        window.isStatusBarContrastEnforced = !disableContrast
+        window.isNavigationBarContrastEnforced = !disableContrast
     }
 
     val controller = WindowInsetsControllerCompat(window, decorView)
 
     // 状态栏的可见性
-    if (showStatusBar) {
+    if (options.showStatusBar) {
         controller.show(WindowInsetsCompat.Type.statusBars())
     } else {
         controller.hide(WindowInsetsCompat.Type.statusBars())
     }
 
     //导航栏的可见性
-    if (showNavigationBar) {
+    if (options.showNavigationBar) {
         controller.show(WindowInsetsCompat.Type.navigationBars())
     } else {
         controller.hide(WindowInsetsCompat.Type.navigationBars())
@@ -72,21 +121,38 @@ fun Activity.setupImmersion(
     // 隐藏系统栏时的行为：手势滑动可临时唤出
     controller.systemBarsBehavior =
         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-
-    // 智能推断：根据页面背景判断是否应使用深色文字/图标
-    // 使用 lazy 延迟计算，如果用户显式指定了双方颜色，则不执行推断逻辑
-    val autoDarkAppearance by lazy { resolveSystemBarAppearance(this) }
-
-    // 状态栏文字深浅色：null 时自动根据背景推断
-    val resolvedStatusBarDark = isStatusBarDark ?: autoDarkAppearance
     controller.isAppearanceLightStatusBars = resolvedStatusBarDark
-
-    // 导航栏文字深浅色：null 时自动根据背景推断
-    val resolvedNavBarDark = isNavigationBarDark ?: autoDarkAppearance
-    controller.isAppearanceLightNavigationBars = resolvedNavBarDark
+    controller.isAppearanceLightNavigationBars =
+        resolveNavigationBarAppearance(resolvedNavBarDark)
 }
 
 // ======================== 自动推断辅助函数 ========================
+
+private val NAVIGATION_BAR_FALLBACK_SCRIM = Color.argb(102, 0, 0, 0)
+
+internal fun resolveNavigationBarColor(
+    strategy: ImmersionStrategy,
+    isNavigationBarDark: Boolean,
+    sdkInt: Int = Build.VERSION.SDK_INT
+): Int {
+    if (strategy == ImmersionStrategy.Transparent) return Color.TRANSPARENT
+    return if (sdkInt in Build.VERSION_CODES.M until Build.VERSION_CODES.O && isNavigationBarDark) {
+        NAVIGATION_BAR_FALLBACK_SCRIM
+    } else {
+        Color.TRANSPARENT
+    }
+}
+
+internal fun resolveNavigationBarAppearance(
+    requestedDark: Boolean,
+    sdkInt: Int = Build.VERSION.SDK_INT
+): Boolean {
+    return sdkInt >= Build.VERSION_CODES.O && requestedDark
+}
+
+internal fun shouldDisableContrastEnforcement(strategy: ImmersionStrategy): Boolean {
+    return strategy == ImmersionStrategy.Transparent
+}
 
 /**
  * 根据页面背景色自动推断系统栏内容（文字/图标）应该是深色还是浅色
@@ -100,14 +166,35 @@ private fun resolveSystemBarAppearance(activity: Activity): Boolean {
 
 /**
  * 获取页面的背景色，优先级：
- * 1. Content 根布局的背景色
- * 2. DecorView 的背景色
+ * 1. 递归查找 Content 根布局中第一个有效的背景色
+ * 2. 如果没找到，尝试 DecorView 的背景色
  * 3. 兜底白色
  */
 private fun resolveBackgroundColor(activity: Activity): Int {
-    val contentView =
-        (activity.findViewById<View>(android.R.id.content) as? ViewGroup)?.getChildAt(0)
-    return extractBgColor(contentView) ?: extractBgColor(activity.window.decorView) ?: Color.WHITE
+    val contentView = activity.findViewById<ViewGroup>(android.R.id.content)
+    return findBackgroundColor(contentView)
+        ?: extractBgColor(activity.window.decorView)
+        ?: Color.WHITE
+}
+
+/**
+ * 递归查找视图树中第一个有效的背景颜色 (深度优先)。
+ */
+private fun findBackgroundColor(view: View?): Int? {
+    if (view == null || view.visibility != View.VISIBLE) return null
+
+    // 尝试提取当前 View 的背景
+    val color = extractBgColor(view)
+    if (color != null) return color
+
+    // 如果当前 View 没有背景且是 ViewGroup，递归查找其子视图
+    if (view is ViewGroup) {
+        for (i in 0 until view.childCount) {
+            val childColor = findBackgroundColor(view.getChildAt(i))
+            if (childColor != null) return childColor
+        }
+    }
+    return null
 }
 
 /**
