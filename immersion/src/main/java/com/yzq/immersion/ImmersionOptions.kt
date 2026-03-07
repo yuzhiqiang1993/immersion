@@ -1,8 +1,9 @@
 package com.yzq.immersion
 
 /**
- * 沉浸式高级配置。
- * 普通场景建议继续使用基础重载，只有在需要策略控制时再使用本配置。
+ * 沉浸式配置项
+ * - `isStatusBarDark/isNavigationBarDark = null` 时会基于页面背景自动推断。
+ * - `strategy` 主要影响导航栏颜色回退和对比度保护策略。
  */
 data class ImmersionOptions(
     val showStatusBar: Boolean = true,

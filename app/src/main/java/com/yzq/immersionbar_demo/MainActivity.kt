@@ -1,6 +1,5 @@
 package com.yzq.immersionbar_demo
 
-import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
@@ -8,7 +7,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.yzq.immersion.*
 import com.yzq.immersionbar_demo.databinding.ActivityMainBinding
 import java.util.*
@@ -101,6 +99,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnViewPager.setOnClickListener {
             startActivity(Intent(this, ViewPagerDemoActivity::class.java))
         }
+        binding.btnWebView.setOnClickListener {
+            startActivity(Intent(this, WebViewActivity::class.java))
+        }
 
         binding.btnDrawer.setOnClickListener {
             startActivity(Intent(this, DrawerDemoActivity::class.java))
@@ -108,27 +109,6 @@ class MainActivity : AppCompatActivity() {
         binding.btnCoordinator.setOnClickListener {
             startActivity(Intent(this, CoordinatorDemoActivity::class.java))
         }
-        binding.btnFullScreenDialog.setOnClickListener { showFullScreenDialog() }
-        binding.btnBottomSheet.setOnClickListener { showBottomSheetDialog() }
-    }
-
-    private fun showFullScreenDialog() {
-        val dialog = Dialog(this, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen)
-        dialog.setContentView(R.layout.dialog_full_screen)
-        dialog.findViewById<View>(R.id.btnClose).setOnClickListener { dialog.dismiss() }
-
-        // 使用库 API：Dialog 扩展
-        dialog.setupImmersion()
-        dialog.show()
-    }
-
-    private fun showBottomSheetDialog() {
-        val bottomSheet = BottomSheetDialog(this)
-        bottomSheet.setContentView(R.layout.dialog_bottom_sheet)
-
-        // 使用库 API：BottomSheet 扩展
-        bottomSheet.setupBottomSheetImmersion()
-        bottomSheet.show()
     }
 
     /**
