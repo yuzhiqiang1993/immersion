@@ -12,12 +12,14 @@ import androidx.core.view.WindowInsetsControllerCompat
 /**
  * Activity 沉浸式扩展
  * 基于 Android 15 强制 Edge-to-Edge 规范设计。
- * 只负责 Window 级别的全屏铺设和系统栏外观配置，
+ * 只负责 Window 级别的全屏铺设和系统栏外观配置。
  * @author : yuzhiqiang
  */
 
 /**
  * 针对 Activity 的 Window 开启 Edge-to-Edge 并配置系统栏外观。
+ *
+ * 在 `setContentView` 之后调用，避免背景自动推断基于未完成的视图树得到错误结果。
  *
  * @param showStatusBar 是否显示状态栏
  * @param showNavigationBar 是否显示导航栏
@@ -41,7 +43,7 @@ fun Activity.setupImmersion(
 }
 
 /**
- * Activity 沉浸式高级重载。
+ * Activity 沉浸式重载。
  * 可在保持默认易用性的同时，通过 [ImmersionOptions.strategy] 控制视觉与兼容策略。
  */
 @Suppress("DEPRECATION")
@@ -87,9 +89,53 @@ fun Activity.setupImmersion(options: ImmersionOptions) {
 
     // 隐藏系统栏时的行为：手势滑动可临时唤出
     controller.useTransientBarsBySwipe()
-    controller.isAppearanceLightStatusBars = resolvedStatusBarDark
-    controller.isAppearanceLightNavigationBars =
-        resolveNavigationBarAppearance(resolvedNavBarDark)
+    setSystemBarDarkMode(
+        isStatusBarDark = resolvedStatusBarDark,
+        isNavigationBarDark = resolvedNavBarDark
+    )
+}
+
+/**
+ * 动态设置状态栏内容（文字/图标）深浅色。
+ *
+ * @param isDark true 表示深色内容（适配浅色背景）；false 表示浅色内容
+ */
+fun Activity.setStatusBarDark(isDark: Boolean) {
+    val controller = WindowInsetsControllerCompat(window, window.decorView)
+    controller.isAppearanceLightStatusBars = isDark
+}
+
+/**
+ * 动态设置导航栏内容（图标）深浅色。
+ *
+ * 注意：Android 8.0(API 26) 以下不支持深色导航栏图标，
+ * 在低版本上该设置会自动回退为浅色图标。
+ *
+ * @param isDark true 表示深色图标（仅 API 26+ 生效）；false 表示浅色图标
+ */
+fun Activity.setNavigationBarDark(isDark: Boolean) {
+    val controller = WindowInsetsControllerCompat(window, window.decorView)
+    controller.isAppearanceLightNavigationBars = resolveNavigationBarAppearance(isDark)
+}
+
+/**
+ * 动态设置系统栏内容深浅色。
+ *
+ * @param isStatusBarDark null 表示保持当前状态栏外观不变
+ * @param isNavigationBarDark null 表示保持当前导航栏外观不变
+ */
+fun Activity.setSystemBarDarkMode(
+    isStatusBarDark: Boolean? = null,
+    isNavigationBarDark: Boolean? = null
+) {
+    val controller = WindowInsetsControllerCompat(window, window.decorView)
+    if (isStatusBarDark != null) {
+        controller.isAppearanceLightStatusBars = isStatusBarDark
+    }
+    if (isNavigationBarDark != null) {
+        controller.isAppearanceLightNavigationBars =
+            resolveNavigationBarAppearance(isNavigationBarDark)
+    }
 }
 
 // ======================== 自动推断辅助函数 ========================
@@ -124,6 +170,8 @@ internal fun shouldDisableContrastEnforcement(strategy: ImmersionStrategy): Bool
  * 根据页面背景色自动推断系统栏内容（文字/图标）应该是深色还是浅色
  * 亮色背景 → 返回 true (需要深色内容)
  * 暗色背景 → 返回 false (需要浅色内容)
+ *
+ * 这是启发式推断：只识别可提取纯色的背景（ColorDrawable），复杂背景可能无法准确反映视觉亮度。
  */
 private fun resolveSystemBarAppearance(activity: Activity): Boolean {
     val bgColor = resolveBackgroundColor(activity)
@@ -145,6 +193,7 @@ private fun resolveBackgroundColor(activity: Activity): Int {
 
 /**
  * 递归查找视图树中第一个有效的背景颜色 (深度优先)。
+ * 返回首个命中的可解析纯色背景，不保证一定代表整页主背景。
  */
 private fun findBackgroundColor(view: View?): Int? {
     if (view == null || view.visibility != View.VISIBLE) return null
@@ -196,7 +245,7 @@ fun Int.isLightColor(): Boolean {
 
 /**
  * 将当前颜色按比例加深。
- * @param factor 变暗系数，默认 0.7f
+ * @param factor 变暗系数，建议范围 0f~1f，默认 0.7f
  */
 fun Int.darkenColor(factor: Float = 0.7f): Int {
     return Color.rgb(
@@ -208,7 +257,7 @@ fun Int.darkenColor(factor: Float = 0.7f): Int {
 
 /**
  * 获取当前主题配置的 ActionBar 高度像素值。
- * 无法获取时默认返回 0。
+ * 无法获取时返回 0。常用于自定义 Toolbar 高度 = actionBarSize + statusBarInsetTop。
  */
 val android.content.Context.actionBarHeight: Int
     get() {

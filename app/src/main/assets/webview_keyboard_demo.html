@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta
+            content="width=device-width, initial-scale=1, viewport-fit=cover"
+            name="viewport"
+    >
+    <title>WebView Keyboard Demo</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f5f5f5;
+            --ink: #212121;
+            --muted: #616161;
+            --line: #e0e0e0;
+            --primary: #1976d2;
+            --footer-height: 84px;
+            --radius-lg: 20px;
+            --radius-md: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+            color: var(--ink);
+            background: var(--bg);
+        }
+
+        .page {
+            padding: 24px 16px calc(var(--footer-height) + 36px) 16px;
+        }
+
+        .title {
+            margin: 0 0 8px;
+            font-size: 30px;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            margin: 0 0 18px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .card {
+            margin-top: 12px;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            background: var(--surface);
+            border: 1px solid var(--line);
+        }
+
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 18px;
+        }
+
+        .card p,
+        .card li {
+            margin: 0;
+            line-height: 1.65;
+            color: var(--muted);
+        }
+
+        .card ul {
+            margin: 0 0 0;
+            padding-left: 18px;
+        }
+
+        .section-title {
+            margin: 24px 0 10px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .footer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10;
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
+            background: #ffffff;
+            border-top: 1px solid var(--line);
+        }
+
+        .composer {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+        }
+
+        .composer input {
+            width: 100%;
+            border: 0;
+            outline: none;
+            background: transparent;
+            color: var(--ink);
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .composer button {
+            border: 0;
+            border-radius: 999px;
+            padding: 12px 16px;
+            color: white;
+            background: var(--primary);
+            font-weight: 700;
+        }
+
+        .debug {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<main class="page">
+    <h1 class="title">WebView 键盘测试</h1>
+    <p class="subtitle">底部输入框固定在页面底部，点击输入框后观察是否被软键盘遮挡。</p>
+
+    <section class="card">
+        <h2>测试步骤</h2>
+        <ul>
+            <li>点击底部输入框，触发系统键盘。</li>
+            <li>确认输入框和按钮是否完整可见。</li>
+            <li>收起键盘后再次弹出，观察位置是否稳定。</li>
+        </ul>
+    </section>
+
+    <p class="section-title">滚动内容</p>
+    <section class="card">
+        <p>这是一段占位内容，用于让页面可滚动，便于观察固定输入栏在不同滚动位置下的行为。</p>
+    </section>
+    <section class="card">
+        <p>如果键盘弹出时 WebView 高度被正确压缩，底部输入栏应当随可视区域上移，不会被键盘覆盖。</p>
+    </section>
+    <section class="card">
+        <p>如果你看到输入栏和键盘之间仍有空隙，通常来自网页自身 footer 的底部 padding。</p>
+    </section>
+    <section class="card">
+        <p>这个页面不依赖任何前端框架，仅用于验证原生 insets 处理是否生效。</p>
+    </section>
+</main>
+
+<div class="footer">
+    <div class="composer">
+        <input id="messageInput" placeholder="在这里输入内容，观察键盘是否遮住输入框" type="text">
+        <button type="button">发送</button>
+    </div>
+    <div class="debug" id="debug">viewport: -</div>
+</div>
+
+<script>
+    const debugEl = document.getElementById("debug");
+
+    function updateDebug() {
+        const viewport = window.visualViewport;
+        const height = viewport ? Math.round(viewport.height) : window.innerHeight;
+        const offsetTop = viewport ? Math.round(viewport.offsetTop) : 0;
+        debugEl.textContent = `viewport: ${height}px, offsetTop: ${offsetTop}px, innerHeight: ${window.innerHeight}px`;
+    }
+
+    updateDebug();
+    window.addEventListener("resize", updateDebug);
+    window.visualViewport && window.visualViewport.addEventListener("resize", updateDebug);
+    window.visualViewport && window.visualViewport.addEventListener("scroll", updateDebug);
+</script>
+</body>
+</html>

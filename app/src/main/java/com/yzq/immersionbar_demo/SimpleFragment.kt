@@ -1,6 +1,7 @@
 package com.yzq.immersionbar_demo
 
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +10,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.Fragment
 import com.yzq.immersion.applyStatusBarMargin
 import com.yzq.immersion.applyStatusBarPadding
-import com.yzq.immersion.setupImmersion
+import com.yzq.immersion.setStatusBarDark
 import com.yzq.immersionbar_demo.databinding.FragmentSimpleBinding
 
 class SimpleFragment : Fragment() {
@@ -62,19 +63,20 @@ class SimpleFragment : Fragment() {
         binding.rootView.setBackgroundColor(bgColor)
 
         val modeText = when (avoidMode) {
-            0 -> "Mode: 完全沉浸"
-            1 -> "Mode: applyStatusBarPadding 避让 (内容推下，背景蔓延)"
-            2 -> "Mode: applyStatusBarMargin 避让 (内容和背景全部推下)"
-            else -> "未知"
+            0 -> "沉浸"
+            1 -> "Padding"
+            else -> "Margin"
         }
-        binding.tvTitle.text = "$title\n$modeText"
-        binding.tvDesc.text = "请观察上方半透明指示器位置"
+        binding.tvTitle.text = "$title · $modeText"
+        binding.tvDesc.text = "观察顶部内容与状态栏文字颜色"
 
-        // 库 API：使用 View 扩展进行避让
         when (avoidMode) {
             0 -> { /* 完全沉浸，不做任何避让 */ }
             1 -> binding.rootView.applyStatusBarPadding()
-            2 -> binding.rootView.applyStatusBarMargin()
+            2 -> {
+                binding.rootView.applyStatusBarMargin()
+
+            }
         }
 
         // 根据背景亮度调整文字颜色
@@ -87,9 +89,14 @@ class SimpleFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         activity?.let {
-            val isLightBg = ColorUtils.calculateLuminance(bgColor) > 0.5
-            // 库 API：设置状态栏文字颜色
-            it.setupImmersion(isStatusBarDark = isLightBg)
+            // Margin 模式下顶部显示的是 Activity 背景，不是 Fragment 背景。
+            val targetColor = if (avoidMode == 2) {
+                (it.window.decorView.background as? ColorDrawable)?.color ?: Color.WHITE
+            } else {
+                bgColor
+            }
+            val isLightBg = ColorUtils.calculateLuminance(targetColor) > 0.5
+            it.setStatusBarDark(isLightBg)
         }
     }
 
