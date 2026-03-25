@@ -87,6 +87,9 @@ setSystemBarDarkMode(
     isStatusBarDark = true,
     isNavigationBarDark = true
 )
+
+// 根据当前状态栏区域下方实际显示的背景，自动刷新状态栏图标深浅色
+updateStatusBarDarkModeByBackground()
 ```
 
 ### Strategy
@@ -134,6 +137,7 @@ val darker = colorInt.darkenColor(0.7f)
 - 建议在 `setContentView` 后调用 `setupImmersion()`。
 - `setupImmersion()` 只处理 Window，不会自动处理内容 View 的避让。
 - 自动深浅色推断是启发式（基于可提取背景色），复杂背景建议显式传参。
+- `updateStatusBarDarkModeByBackground()` 适合在 Fragment 切换、折叠 AppBar、动态换肤后调用。
 - 导航栏深色图标仅 Android 8.0（API 26）及以上支持。
 - 当前版本不再提供 Dialog / BottomSheet 专用沉浸式扩展。
 

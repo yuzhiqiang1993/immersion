@@ -1,7 +1,6 @@
 package com.yzq.immersionbar_demo
 
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +9,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.Fragment
 import com.yzq.immersion.applyStatusBarMargin
 import com.yzq.immersion.applyStatusBarPadding
-import com.yzq.immersion.setStatusBarDark
+import com.yzq.immersion.updateStatusBarDarkModeByBackground
 import com.yzq.immersionbar_demo.databinding.FragmentSimpleBinding
 
 class SimpleFragment : Fragment() {
@@ -20,6 +19,7 @@ class SimpleFragment : Fragment() {
 
     private var bgColor: Int = Color.WHITE
     private var title: String = "Fragment"
+
     // 0: 完全沉浸
     // 1: Padding 模式（背景铺满，内容推下）
     // 2: Margin 模式（整个视图和背景全部推下）
@@ -71,7 +71,9 @@ class SimpleFragment : Fragment() {
         binding.tvDesc.text = "观察顶部内容与状态栏文字颜色"
 
         when (avoidMode) {
-            0 -> { /* 完全沉浸，不做任何避让 */ }
+            0 -> { /* 完全沉浸，不做任何避让 */
+            }
+
             1 -> binding.rootView.applyStatusBarPadding()
             2 -> {
                 binding.rootView.applyStatusBarMargin()
@@ -89,14 +91,7 @@ class SimpleFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         activity?.let {
-            // Margin 模式下顶部显示的是 Activity 背景，不是 Fragment 背景。
-            val targetColor = if (avoidMode == 2) {
-                (it.window.decorView.background as? ColorDrawable)?.color ?: Color.WHITE
-            } else {
-                bgColor
-            }
-            val isLightBg = ColorUtils.calculateLuminance(targetColor) > 0.5
-            it.setStatusBarDark(isLightBg)
+            it.updateStatusBarDarkModeByBackground()
         }
     }
 

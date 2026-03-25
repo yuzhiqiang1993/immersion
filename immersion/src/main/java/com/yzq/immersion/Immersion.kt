@@ -2,10 +2,12 @@ package com.yzq.immersion
 
 import android.app.Activity
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
@@ -138,9 +140,33 @@ fun Activity.setSystemBarDarkMode(
     }
 }
 
+/**
+ * 根据当前窗口在状态栏区域下方实际显示的背景，自动刷新状态栏内容深浅色。
+ *
+ * 适用于 Fragment 切换、折叠 AppBar、主题背景动态变化等场景，
+ */
+fun Activity.updateStatusBarDarkModeByBackground(
+    fallbackColor: Int = Color.WHITE
+) {
+    setStatusBarDark(resolveStatusBarDarkModeByBackground(fallbackColor))
+}
+
+/**
+ * 根据当前窗口在状态栏区域下方实际显示的背景，推断状态栏内容是否应使用深色。
+ *
+ * 内部会对状态栏区域做多点采样，并按 View 层级对可解析的纯色背景做合成。
+ * 这仍然是启发式推断；对于图片、视频或复杂渐变背景，建议显式指定。
+ */
+fun Activity.resolveStatusBarDarkModeByBackground(
+    fallbackColor: Int = Color.WHITE
+): Boolean {
+    return resolveStatusBarBackgroundColor(this, fallbackColor).isLightColor()
+}
+
 // ======================== 自动推断辅助函数 ========================
 
 private val NAVIGATION_BAR_FALLBACK_SCRIM = Color.argb(102, 0, 0, 0)
+private val STATUS_BAR_SAMPLE_X_FRACTIONS = floatArrayOf(0.25f, 0.5f, 0.75f)
 
 internal fun resolveNavigationBarColor(
     strategy: ImmersionStrategy,
@@ -174,8 +200,16 @@ internal fun shouldDisableContrastEnforcement(strategy: ImmersionStrategy): Bool
  * 这是启发式推断：只识别可提取纯色的背景（ColorDrawable），复杂背景可能无法准确反映视觉亮度。
  */
 private fun resolveSystemBarAppearance(activity: Activity): Boolean {
-    val bgColor = resolveBackgroundColor(activity)
-    return bgColor.isLightColor()
+    return activity.resolveStatusBarDarkModeByBackground()
+}
+
+private fun resolveStatusBarBackgroundColor(
+    activity: Activity,
+    fallbackColor: Int
+): Int {
+    val baseColor = resolveFallbackBackgroundColor(activity) ?: fallbackColor
+    val sampledColors = sampleStatusBarBackgroundColors(activity, baseColor)
+    return averageColors(sampledColors) ?: baseColor
 }
 
 /**
@@ -184,11 +218,85 @@ private fun resolveSystemBarAppearance(activity: Activity): Boolean {
  * 2. 如果没找到，尝试 DecorView 的背景色
  * 3. 兜底白色
  */
-private fun resolveBackgroundColor(activity: Activity): Int {
+private fun resolveFallbackBackgroundColor(activity: Activity): Int? {
     val contentView = activity.findViewById<ViewGroup>(android.R.id.content)
     return findBackgroundColor(contentView)
         ?: extractBgColor(activity.window.decorView)
-        ?: Color.WHITE
+}
+
+private fun sampleStatusBarBackgroundColors(
+    activity: Activity,
+    baseColor: Int
+): List<Int> {
+    val decorView = activity.window.decorView as? ViewGroup ?: return emptyList()
+    val insets = ViewCompat.getRootWindowInsets(decorView) ?: return emptyList()
+    val statusBarInsetTop = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+    if (statusBarInsetTop <= 0 || decorView.width <= 0 || decorView.height <= 0) {
+        return emptyList()
+    }
+
+    val decorLocation = IntArray(2)
+    decorView.getLocationOnScreen(decorLocation)
+    val minX = decorLocation[0]
+    val maxX = decorLocation[0] + decorView.width - 1
+    val sampleY = decorLocation[1] + maxOf(1, statusBarInsetTop / 2)
+    val contentView = activity.findViewById<ViewGroup>(android.R.id.content)
+
+    val sampledColors = mutableListOf<Int>()
+    for (fraction in STATUS_BAR_SAMPLE_X_FRACTIONS) {
+        val sampleX = (decorLocation[0] + decorView.width * fraction).toInt().coerceIn(minX, maxX)
+        val sampledColor = findCompositedBackgroundColorAtPoint(contentView, sampleX, sampleY)
+            ?: findCompositedBackgroundColorAtPoint(decorView, sampleX, sampleY)
+        if (sampledColor != null) {
+            sampledColors += compositeWithBackground(sampledColor, baseColor)
+        }
+    }
+    return sampledColors
+}
+
+private fun findCompositedBackgroundColorAtPoint(
+    view: View?,
+    sampleX: Int,
+    sampleY: Int
+): Int? {
+    if (view == null || view.visibility != View.VISIBLE || view.alpha <= 0f) return null
+    if (!isPointInsideView(view, sampleX, sampleY)) return null
+
+    var color = extractRawBgColor(view)
+    if (view is ViewGroup) {
+        for (i in 0 until view.childCount) {
+            val childColor = findCompositedBackgroundColorAtPoint(
+                view = view.getChildAt(i),
+                sampleX = sampleX,
+                sampleY = sampleY
+            )
+            if (childColor != null) {
+                color = if (color != null) {
+                    androidx.core.graphics.ColorUtils.compositeColors(childColor, color)
+                } else {
+                    childColor
+                }
+            }
+        }
+    }
+    return color
+}
+
+private fun isPointInsideView(
+    view: View,
+    sampleX: Int,
+    sampleY: Int
+): Boolean {
+    val visibleRect = Rect()
+    return view.getGlobalVisibleRect(visibleRect) && visibleRect.contains(sampleX, sampleY)
+}
+
+private fun averageColors(colors: List<Int>): Int? {
+    if (colors.isEmpty()) return null
+    val averageRed = colors.sumOf { Color.red(it) } / colors.size
+    val averageGreen = colors.sumOf { Color.green(it) } / colors.size
+    val averageBlue = colors.sumOf { Color.blue(it) } / colors.size
+    return Color.rgb(averageRed, averageGreen, averageBlue)
 }
 
 /**
@@ -217,21 +325,24 @@ private fun findBackgroundColor(view: View?): Int? {
  * 仅支持 ColorDrawable（纯色背景），渐变/图片等会返回 null
  */
 private fun extractBgColor(view: View?): Int? {
+    val rawColor = extractRawBgColor(view) ?: return null
+    return compositeWithBackground(rawColor, Color.WHITE)
+}
+
+private fun extractRawBgColor(view: View?): Int? {
     val colorDrawable = view?.background as? ColorDrawable ?: return null
-    return blendWithWhite(colorDrawable.color)
+    return colorDrawable.color
 }
 
 /**
  * 将半透明颜色与白色混合，得到最终感知亮度的等效不透明色
  * 用于准确判断半透明背景在白色底上的实际视觉亮度
  */
-private fun blendWithWhite(color: Int): Int {
-    val alpha = Color.alpha(color)
-    if (alpha >= 255) return color
-    val r = (Color.red(color) * alpha + 255 * (255 - alpha)) / 255
-    val g = (Color.green(color) * alpha + 255 * (255 - alpha)) / 255
-    val b = (Color.blue(color) * alpha + 255 * (255 - alpha)) / 255
-    return Color.rgb(r, g, b)
+private fun compositeWithBackground(
+    foregroundColor: Int,
+    backgroundColor: Int
+): Int {
+    return androidx.core.graphics.ColorUtils.compositeColors(foregroundColor, backgroundColor)
 }
 
 /**
