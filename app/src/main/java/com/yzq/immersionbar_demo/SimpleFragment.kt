@@ -9,7 +9,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.Fragment
 import com.yzq.immersion.applyStatusBarMargin
 import com.yzq.immersion.applyStatusBarPadding
-import com.yzq.immersion.updateStatusBarDarkModeByBackground
+import com.yzq.immersion.syncStatusBarFontWithBg
 import com.yzq.immersionbar_demo.databinding.FragmentSimpleBinding
 
 class SimpleFragment : Fragment() {
@@ -18,11 +18,7 @@ class SimpleFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var bgColor: Int = Color.WHITE
-    private var title: String = "Fragment"
-
-    // 0: 完全沉浸
-    // 1: Padding 模式（背景铺满，内容推下）
-    // 2: Margin 模式（整个视图和背景全部推下）
+    private var title: String = ""
     private var avoidMode: Int = 0
 
     companion object {
@@ -30,14 +26,12 @@ class SimpleFragment : Fragment() {
         private const val ARG_TITLE = "arg_title"
         private const val ARG_AVOID_MODE = "arg_avoid_mode"
 
-        fun newInstance(title: String, color: Int, avoidMode: Int = 0): SimpleFragment {
-            val fragment = SimpleFragment()
-            val args = Bundle()
-            args.putInt(ARG_COLOR, color)
-            args.putString(ARG_TITLE, title)
-            args.putInt(ARG_AVOID_MODE, avoidMode)
-            fragment.arguments = args
-            return fragment
+        fun newInstance(title: String, color: Int, avoidMode: Int = 0) = SimpleFragment().apply {
+            arguments = Bundle().apply {
+                putInt(ARG_COLOR, color)
+                putString(ARG_TITLE, title)
+                putInt(ARG_AVOID_MODE, avoidMode)
+            }
         }
     }
 
@@ -45,15 +39,12 @@ class SimpleFragment : Fragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             bgColor = it.getInt(ARG_COLOR)
-            title = it.getString(ARG_TITLE) ?: "Fragment"
+            title = it.getString(ARG_TITLE) ?: ""
             avoidMode = it.getInt(ARG_AVOID_MODE, 0)
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSimpleBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -62,37 +53,30 @@ class SimpleFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.rootView.setBackgroundColor(bgColor)
 
-        val modeText = when (avoidMode) {
+        val modeLabel = when (avoidMode) {
             0 -> "沉浸"
             1 -> "Padding"
             else -> "Margin"
         }
-        binding.tvTitle.text = "$title · $modeText"
-        binding.tvDesc.text = "观察顶部内容与状态栏文字颜色"
+        binding.tvTitle.text = "$title · $modeLabel"
 
+        // 库 API：根据模式进行顶部避让
         when (avoidMode) {
-            0 -> { /* 完全沉浸，不做任何避让 */
-            }
-
             1 -> binding.rootView.applyStatusBarPadding()
-            2 -> {
-                binding.rootView.applyStatusBarMargin()
-
-            }
+            2 -> binding.rootView.applyStatusBarMargin()
         }
 
-        // 根据背景亮度调整文字颜色
+        // 局部 UI 染色
         val isLight = ColorUtils.calculateLuminance(bgColor) > 0.5
-        val textColor = if (isLight) Color.BLACK else Color.WHITE
-        binding.tvTitle.setTextColor(textColor)
-        binding.tvDesc.setTextColor(textColor)
+        val contentColor = if (isLight) Color.BLACK else Color.WHITE
+        binding.tvTitle.setTextColor(contentColor)
+        binding.tvDesc.setTextColor(contentColor)
     }
 
     override fun onResume() {
         super.onResume()
-        activity?.let {
-            it.updateStatusBarDarkModeByBackground()
-        }
+        // 库 API：当 Fragment 可见时，通知 Activity 刷新状态栏文字颜色
+        activity?.syncStatusBarFontWithBg()
     }
 
     override fun onDestroyView() {

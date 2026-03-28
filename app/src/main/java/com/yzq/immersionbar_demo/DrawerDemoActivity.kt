@@ -10,19 +10,13 @@ import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.materialswitch.MaterialSwitch
-import com.yzq.immersion.actionBarHeight
-import com.yzq.immersion.applyNavigationBarMargin
-import com.yzq.immersion.applyStatusBarPadding
-import com.yzq.immersion.darkenColor
-import com.yzq.immersion.isLightColor
-import com.yzq.immersion.setupImmersion
+import com.yzq.immersion.*
 import com.yzq.immersionbar_demo.databinding.ActivityDrawerDemoBinding
 
 class DrawerDemoActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDrawerDemoBinding
     private lateinit var toggle: ActionBarDrawerToggle
-    private var isDarkStatusBarText = false
     private var currentBackgroundColor = Color.WHITE
 
     private val predefinedColors = listOf(
@@ -63,39 +57,27 @@ class DrawerDemoActivity : AppCompatActivity() {
 
         binding.navView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_home -> {
-                    finish(); binding.drawerLayout.closeDrawers(); true
-                }
-
-                R.id.nav_settings -> {
-                    showSettingsDialog(); binding.drawerLayout.closeDrawers(); true
-                }
-
-                R.id.nav_about -> {
-                    showAboutDialog(); binding.drawerLayout.closeDrawers(); true
-                }
-
+                R.id.nav_home -> { finish(); true }
+                R.id.nav_settings -> { showSettingsDialog(); true }
+                R.id.nav_about -> { showAboutDialog(); true }
                 else -> false
-            }
+            }.also { if (it) binding.drawerLayout.closeDrawers() }
         }
     }
 
     private fun setupImmersionConfig() {
-        // 库 API：初始化沉浸式
-        updateImmersion()
+        // 库 API：初始化沉浸式（状态栏/导航栏默认自动推断）
+        setupImmersion()
 
-        // Toolbar 需要手动适配高度 + padding（actionBarSize + 状态栏高度）
+        // Toolbar 标题栏适配状态栏高度
         ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
             binding.toolbar.layoutParams = binding.toolbar.layoutParams.apply {
                 height = actionBarHeight + systemBars.top
             }
             binding.toolbar.setPadding(
-                binding.toolbar.paddingLeft,
-                systemBars.top,
-                binding.toolbar.paddingRight,
-                binding.toolbar.paddingBottom
+                binding.toolbar.paddingLeft, systemBars.top,
+                binding.toolbar.paddingRight, binding.toolbar.paddingBottom
             )
             insets
         }
@@ -115,35 +97,35 @@ class DrawerDemoActivity : AppCompatActivity() {
         }
 
         binding.btnToggleTheme.setOnClickListener {
-            isDarkStatusBarText = !isDarkStatusBarText
-            applyBackgroundColor(if (isDarkStatusBarText) Color.WHITE else Color.parseColor("#2C2C2C"))
+            val isCurrentlyLight = currentBackgroundColor.isLightColor()
+            applyBackgroundColor(if (isCurrentlyLight) Color.parseColor("#2C2C2C") else Color.WHITE)
         }
 
         binding.switchDarkStatus.setOnCheckedChangeListener { _, isChecked ->
-            isDarkStatusBarText = isChecked
-            updateImmersion()
+            // 库 API：直接控制状态栏文字深浅色
+            setStatusBarDarkFont(isChecked)
         }
 
-        binding.switchShowStatus.setOnCheckedChangeListener { _, _ ->
-            updateImmersion()
+        binding.switchShowStatus.setOnCheckedChangeListener { _, isChecked ->
+            // 库 API：重新配置沉浸式可见性
+            setupImmersion(showStatusBar = isChecked)
         }
     }
 
     private fun applyBackgroundColor(color: Int) {
+        val currentColor = (binding.mainContent.background as? android.graphics.drawable.ColorDrawable)?.color ?: Color.WHITE
         currentBackgroundColor = color
-        val currentColor =
-            (binding.mainContent.background as? android.graphics.drawable.ColorDrawable)?.color
-                ?: Color.WHITE
 
         ValueAnimator.ofArgb(currentColor, color).apply {
             duration = 300
             addUpdateListener { binding.mainContent.setBackgroundColor(it.animatedValue as Int) }
         }.start()
 
-        updateUIColors(color.isLightColor(), color)
+        updateUIColors(color)
     }
 
-    private fun updateUIColors(isLightBg: Boolean, bgColor: Int) {
+    private fun updateUIColors(bgColor: Int) {
+        val isLightBg = bgColor.isLightColor()
         val textColor = if (isLightBg) Color.parseColor("#212121") else Color.WHITE
         binding.switchDarkStatus.setTextColor(textColor)
         binding.switchShowStatus.setTextColor(textColor)
@@ -156,27 +138,13 @@ class DrawerDemoActivity : AppCompatActivity() {
         binding.toolbar.setTitleTextColor(toolbarContentColor)
         toggle.drawerArrowDrawable.color = toolbarContentColor
 
-        if (isToolbarLight != isDarkStatusBarText) {
-            isDarkStatusBarText = isToolbarLight
-            binding.switchDarkStatus.isChecked = isToolbarLight
-        }
-        updateImmersion()
+        // 库 API：根据 Toolbar 亮度动态刷新状态栏文字颜色
+        setStatusBarDarkFont(isToolbarLight)
+        binding.switchDarkStatus.isChecked = isToolbarLight
 
         binding.btnToggleTheme.text = if (isLightBg) "切换为深色主题" else "切换为浅色主题"
         binding.navView.getHeaderView(0).setBackgroundColor(toolbarColor.darkenColor(0.85f))
     }
-
-    /**
-     * 统一的沉浸式更新入口，始终传入所有开关的当前状态。
-     */
-    private fun updateImmersion() {
-        this@DrawerDemoActivity.setupImmersion(
-            showStatusBar = binding.switchShowStatus.isChecked,
-            isStatusBarDark = isDarkStatusBarText
-        )
-    }
-
-    // ======================== 工具 ========================
 
     private fun showSettingsDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_settings, null)
@@ -184,17 +152,17 @@ class DrawerDemoActivity : AppCompatActivity() {
         val switchShowStatus = dialogView.findViewById<MaterialSwitch>(R.id.switch_show_status)
         val switchShowNav = dialogView.findViewById<MaterialSwitch>(R.id.switch_show_nav)
 
-        switchDarkStatus.isChecked = isDarkStatusBarText
+        // 假设当前状态从 View 获取
+        switchDarkStatus.isChecked = currentBackgroundColor.isLightColor() 
         switchShowStatus.isChecked = true
         switchShowNav.isChecked = true
 
         androidx.appcompat.app.AlertDialog.Builder(this).setTitle("沉浸式设置").setView(dialogView)
             .setPositiveButton("确定") { _, _ ->
-                isDarkStatusBarText = switchDarkStatus.isChecked
                 this@DrawerDemoActivity.setupImmersion(
                     showStatusBar = switchShowStatus.isChecked,
                     showNavigationBar = switchShowNav.isChecked,
-                    isStatusBarDark = isDarkStatusBarText
+                    isStatusBarDarkFont = switchDarkStatus.isChecked
                 )
             }.setNegativeButton("取消", null).show()
     }
