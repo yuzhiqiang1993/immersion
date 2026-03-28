@@ -119,17 +119,6 @@
                         android:text="导航栏 Margin"
                         android:textColor="#212121"
                         android:textSize="16sp" />
-
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_enable_immersion"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:checked="true"
-                        android:text="开启沉浸式"
-                        android:textColor="#212121"
-                        android:textSize="16sp" />
-
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>

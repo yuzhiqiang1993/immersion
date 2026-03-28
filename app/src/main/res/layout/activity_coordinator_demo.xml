@@ -88,11 +88,12 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switch_dark_status"
+                    android:id="@+id/switch_show_navigation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
                     android:checked="true"
-                    android:text="深色状态栏文字"
+                    android:text="显示导航栏"
                     app:switchPadding="4dp" />
 
                 <com.google.android.material.materialswitch.MaterialSwitch
