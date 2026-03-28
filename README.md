@@ -8,13 +8,10 @@
 
 ## 特性
 
-- 基于官方 Edge-to-Edge 方案（API 23+）
-- Activity 级沉浸式一行开启
-- View 级 Insets 避让（Padding / Margin）
-- 底部避让自动合并导航栏与键盘（`navigationBars | ime`）
-- 支持状态栏/导航栏图标深浅色控制
-- 支持运行时动态切换系统栏图标深浅色
-- 支持颜色亮度判断与工具扩展
+- **现代方案**：基于官方 Edge-to-Edge 模式设计，兼容 API 23+。
+- **对称 API**：Activity 与 Fragment 享有完全一致的沉浸式配置扩展。
+- **智能推断**：支持基于系统栏（状态栏/导航栏）下方背景色的**实时亮度自动反色**。
+- **全能避让**：View 级 Insets 避让（Padding / Margin），底部避让自动合并导航栏与键盘。
 
 ## 安装
 
@@ -22,7 +19,7 @@
 
 ```kotlin
 dependencies {
-    implementation("com.xeonyu:immersion:x.x.x") // 请替换为 Maven Central 最新版本
+    implementation("com.xeonyu:immersion:x.x.x") // 请替换为最新版本
 }
 ```
 
@@ -30,89 +27,100 @@ dependencies {
 
 ## 快速开始
 
+### 1) Activity 开启
+
 ```kotlin
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(binding.root)
 
-        // 1) Window 层：开启沉浸式
+        // 开启沉浸式
         setupImmersion()
 
-        // 2) View 层：根布局避让状态栏 + 底部区域（导航栏/键盘）
-        findViewById<View>(android.R.id.content).applySystemBarsPadding(
-            addStatusBar = true,
-            addNavigationBar = true
-        )
+        // 避让系统栏
+        binding.root.applySystemBarsPadding()
     }
 }
 ```
 
-## 核心 API
+### 2) Fragment 开启
 
-### Activity
+```kotlin
+class SimpleFragment : Fragment() {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        // Fragment 中也可以像在 Activity 中一样调用
+        setupImmersion(isStatusBarDarkFont = true)
+        
+        // View 避让
+        view.applyStatusBarPadding()
+    }
+}
+```
+
+## 核心 API 详解
+
+### 基础沉浸式设置
+
+针对 Activity 或 Fragment 调用 `setupImmersion`：
 
 ```kotlin
 setupImmersion(
     showStatusBar: Boolean = true,
     showNavigationBar: Boolean = true,
-    isStatusBarDark: Boolean? = null,
-    isNavigationBarDark: Boolean? = null
+    isStatusBarDarkFont: Boolean? = null,    // null 表示根据背景自动推断
+    isNavigationBarDarkIcon: Boolean? = null // null 表示根据背景自动推断
 )
 ```
+
+或使用全量配置对象：
 
 ```kotlin
 setupImmersion(
     ImmersionOptions(
-        showStatusBar = true,
-        showNavigationBar = true,
-        isStatusBarDark = null,
-        isNavigationBarDark = null,
-        strategy = ImmersionStrategy.Transparent
+        strategy = ImmersionStrategy.Transparent // 追求彻底透明
     )
 )
 ```
 
-### 动态切换系统栏图标深浅色
+### 动态外观刷新
 
 ```kotlin
-// 仅改状态栏
-setStatusBarDark(true)
+// 手动设置图标深浅色
+setStatusBarDarkFont(true)
+setNavigationBarDarkIcon(false)
 
-// 仅改导航栏（深色图标仅 API 26+ 生效）
-setNavigationBarDark(false)
-
-// 同时改状态栏和导航栏；传 null 表示保持当前值不变
-setSystemBarDarkMode(
-    isStatusBarDark = true,
-    isNavigationBarDark = true
-)
-
-// 根据当前状态栏区域下方实际显示的背景，自动刷新状态栏图标深浅色
-updateStatusBarDarkModeByBackground()
+// 根据背景自动同步（适合滑动过程中调用）
+syncStatusBarFontWithBg() 
+syncSystemBarsWithBg()    // 同时同步状态栏和导航栏
 ```
 
-### Strategy
+### View Insets 避让
 
-- `ImmersionStrategy.Transparent`：视觉沉浸优先，系统栏保持透明，Android 10+ 关闭对比度保护。
-- `ImmersionStrategy.Auto`：兼容可读性优先，旧系统按需回退导航栏底色，Android 10+ 保留对比度保护。
-
-## View Insets API
-
-### Padding 方案
+支持 **Padding** 与 **Margin** 两种模式，底部避让会自动处理 `navigationBars | ime` 的合并逻辑。
 
 ```kotlin
-view.applyStatusBarPadding(add = true)
-view.applyNavigationBarPadding(add = true) // 底部自动包含导航栏/键盘
+// Padding 模式
+view.applyStatusBarPadding()
+view.applyNavigationBarPadding()
 view.applySystemBarsPadding(addStatusBar = true, addNavigationBar = true)
+
+// Margin 模式
+view.applyStatusBarMargin()
+view.applyNavigationBarMargin()
+view.applySystemBarsMargin()
 ```
 
-### Margin 方案
+## 注意事项
 
-```kotlin
-view.applyStatusBarMargin(add = true)
-view.applyNavigationBarMargin(add = true) // 底部自动包含导航栏/键盘
-view.applySystemBarsMargin(addStatusBar = true, addNavigationBar = true)
+- **调用时机**：建议在 `setContentView` 后调用 `setupImmersion()`。
+- **自动推断**：由于推断是基于 View 树渲染采样的，建议在 View 布局完成后（或在滑动监听中）调用 `sync...WithBg()`。
+- **导航栏限制**：导航栏深色图标（Light Navigation Bars）功能仅在 Android 8.0 (API 26) 以上生效。
+- **零分配机制**：内核在高频采样时会复用局部对象池以优化性能，该机制仅在主线程运行，请勿在子线程调用采样 API。
+
+## 许可证
+
+本项目采用 Apache License 2.0。gationBar = true)
 ```
 
 ### 说明
@@ -136,10 +144,11 @@ val darker = colorInt.darkenColor(0.7f)
 
 - 建议在 `setContentView` 后调用 `setupImmersion()`。
 - `setupImmersion()` 只处理 Window，不会自动处理内容 View 的避让。
-- 自动深浅色推断是启发式（基于可提取背景色），复杂背景建议显式传参。
-- `updateStatusBarDarkModeByBackground()` 适合在 Fragment 切换、折叠 AppBar、动态换肤后调用。
+- 自动深浅色推断是启发式，当前基于系统栏区域的低分辨率渲染采样结果判断亮度。
+- `syncStatusBarFontWithBg()` 适合在 Fragment 切换、折叠 AppBar、动态换肤后调用。
+- `syncNavBarIconWithBg()` / `syncSystemBarsWithBg()` 适合在底部背景联动变化时调用。
+- 对于视频、相机或独立 `Surface` 内容，建议显式指定系统栏深浅色。
 - 导航栏深色图标仅 Android 8.0（API 26）及以上支持。
-- 当前版本不再提供 Dialog / BottomSheet 专用沉浸式扩展。
 
 ## 许可证
 
